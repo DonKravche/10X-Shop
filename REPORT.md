@@ -58,7 +58,7 @@ but not executed. Steps 9, 17, 18, 26 and 27 are FULL and were not started.
 
 | Metric | Value |
 | --- | --- |
-| Commits (excluding the initial commit) | 15 |
+| Commits (excluding the initial commit) | 17 at the time of writing — verify with `git rev-list --count HEAD` |
 | Days with commits | 1 (24 October) |
 | Source files in `src/` | 39 (38 TypeScript + `index.css`) |
 | Lines of TypeScript/TSX | 2,177 |
@@ -82,7 +82,7 @@ yet.
 
 ### Honest note on the Git history
 
-All 15 commits fall on one day. The PRD's FULL guidance suggests 40+ commits
+Every commit falls on one day. The PRD's FULL guidance suggests 40+ commits
 across 15+ days; the CORE requirement is only a real, meaningful history, which
 this is — each commit is one step of the documented sequence, with the
 verification done for it recorded in the message. But it does not evidence work
