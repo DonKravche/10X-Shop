@@ -32,3 +32,6 @@ graphify-out
 .env
 .env.*
 !.env.example
+
+# Playwright MCP session output
+.playwright-mcp
