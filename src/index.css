@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+/*
+ * Plain CSS is allowed alongside Tailwind as a helper (Annex A1.7).
+ * Custom @theme design tokens are a FULL requirement (A3-TW / TW5) and are
+ * deliberately not used here: the CORE styling is stock Tailwind utilities.
+ */
+html {
+  font-family: Geist, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Keyboard focus must stay visible everywhere (Annex A, O3 accessibility). */
+:focus-visible {
+  outline: 2px solid var(--color-neutral-950);
+  outline-offset: 2px;
+}
