@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import CartItemRow from '../components/cart/CartItemRow'
 import Container from '../components/ui/Container'
 import PageHeader from '../components/ui/PageHeader'
@@ -15,6 +15,14 @@ import { formatPrice } from '../utils/format'
  */
 export default function CartPage() {
   const { items, itemCount, subtotal, setQuantity, removeItem, clear } = useCart()
+  const location = useLocation()
+
+  /** Set when CheckoutPage bounced an empty cart back here (P5.1). */
+  const cameFromEmptyCheckout =
+    typeof location.state === 'object' &&
+    location.state !== null &&
+    'from' in location.state &&
+    location.state.from === 'checkout-empty'
 
   function handleClear() {
     // P4.1 element 3 fixes this confirmation text.
@@ -27,7 +35,14 @@ export default function CartPage() {
     return (
       <Container className="py-8">
         <PageHeader title="Your cart" />
-        <StateMessage title="Your cart is empty.">
+        <StateMessage
+          title="Your cart is empty."
+          description={
+            cameFromEmptyCheckout
+              ? 'There is nothing to check out yet. Add a product first.'
+              : undefined
+          }
+        >
           <Link
             to="/"
             className="inline-flex min-h-11 items-center rounded-md bg-neutral-950 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
