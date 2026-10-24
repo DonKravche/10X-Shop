@@ -1,4 +1,5 @@
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/auth-context'
 import Container from '../ui/Container'
 
 /*
@@ -21,6 +22,15 @@ const linkClass = ({ isActive }: { isActive: boolean }): string =>
   ].join(' ')
 
 export default function Header() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  /** Returns to the guest state and goes home. The cart is kept (P0.3). */
+  function handleLogout() {
+    logout()
+    navigate('/')
+  }
+
   return (
     <header className="border-b border-neutral-200 bg-white">
       <Container>
@@ -43,6 +53,25 @@ export default function Header() {
               Cart
             </NavLink>
           </nav>
+
+          {user.isLoggedIn ? (
+            <div className="flex items-center gap-2">
+              <span className="hidden text-sm text-neutral-500 sm:inline">
+                {user.username}
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex min-h-11 items-center rounded-md px-3 text-sm text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+              >
+                Log out
+              </button>
+            </div>
+          ) : (
+            <NavLink to="/login" className={linkClass}>
+              Log in
+            </NavLink>
+          )}
         </div>
       </Container>
     </header>
