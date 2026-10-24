@@ -6,6 +6,7 @@ import CheckoutPage from '../pages/CheckoutPage'
 import LoginPage from '../pages/LoginPage'
 import NotFoundPage from '../pages/NotFoundPage'
 import ProductPage from '../pages/ProductPage'
+import ProtectedRoute from './ProtectedRoute'
 
 /**
  * The CORE route map (Annex A1.2).
@@ -23,7 +24,14 @@ export default function AppRoutes() {
         <Route path="products/:id" element={<ProductPage />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="login" element={<LoginPage />} />
-        <Route path="checkout" element={<CheckoutPage />} />
+        <Route
+          path="checkout"
+          element={
+            <ProtectedRoute>
+              <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
