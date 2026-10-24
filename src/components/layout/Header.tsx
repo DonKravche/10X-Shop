@@ -39,7 +39,7 @@ export default function Header() {
         <div className="flex flex-wrap items-center gap-x-2 gap-y-2 py-3">
           <Link
             to="/"
-            className="mr-auto rounded-md text-lg font-bold tracking-tight text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className="mr-auto inline-flex min-h-11 items-center rounded-md text-lg font-bold tracking-tight text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
           >
             10X Shop
           </Link>

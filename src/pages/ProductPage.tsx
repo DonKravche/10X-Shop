@@ -122,7 +122,7 @@ function ProductDetails({ productId }: ProductDetailsProps) {
     <Container className="py-8">
       <Link
         to="/"
-        className="mb-6 inline-block rounded-sm text-sm text-neutral-600 underline underline-offset-2 transition-colors hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+        className="mb-4 inline-flex min-h-11 items-center rounded-sm text-sm text-neutral-600 underline underline-offset-2 transition-colors hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
       >
         &larr; Back to catalog
       </Link>
