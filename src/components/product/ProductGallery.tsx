@@ -13,8 +13,9 @@ interface ProductGalleryProps {
  * Which picture is shown is local component state: nothing outside this
  * component needs to know, so it does not belong in Context.
  *
- * `key={title}` on the component is what resets the selection when the route
- * moves to another product - see ProductPage.
+ * The selection resets when the route moves to another product because
+ * ProductPage keys its ProductDetails by the product id, remounting this
+ * component along with it.
  */
 export default function ProductGallery({ images, thumbnail, title }: ProductGalleryProps) {
   // Some catalogue entries have no gallery, so fall back to the thumbnail.
