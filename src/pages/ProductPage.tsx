@@ -3,10 +3,12 @@ import { Link, useParams } from 'react-router-dom'
 import ProductGallery from '../components/product/ProductGallery'
 import ProductPrice from '../components/product/ProductPrice'
 import StockBadge from '../components/product/StockBadge'
+import Button from '../components/ui/Button'
 import Container from '../components/ui/Container'
 import QuantityStepper from '../components/ui/QuantityStepper'
 import StateMessage from '../components/ui/StateMessage'
 import { fetchProductById } from '../api/products.api'
+import { useCart } from '../context/cart-context'
 import type { Product } from '../types/product'
 import NotFoundPage from './NotFoundPage'
 
@@ -41,6 +43,21 @@ function ProductDetails({ productId }: ProductDetailsProps) {
   const [product, setProduct] = useState<Product | null>(null)
   const [status, setStatus] = useState<Status>('loading')
   const [quantity, setQuantity] = useState(1)
+  const [feedback, setFeedback] = useState('')
+
+  const { addItem } = useCart()
+
+  function handleAddToCart(item: Product) {
+    const added = addItem(item, quantity)
+    // P3.3 asks for simple inline feedback at CORE; the shared Toast system
+    // is FULL. Saying how many units went in is more useful than "done",
+    // because the cart caps the line at the remaining stock.
+    setFeedback(
+      added > 0
+        ? `Added ${added} to your cart.`
+        : 'Your cart already holds all the stock we have.',
+    )
+  }
 
   useEffect(() => {
     let ignore = false
@@ -154,11 +171,30 @@ function ProductDetails({ productId }: ProductDetailsProps) {
               onChange={setQuantity}
               label={product.title}
             />
+            <Button
+              disabled={isSoldOut}
+              onClick={() => handleAddToCart(product)}
+              className="min-w-40"
+            >
+              {isSoldOut ? 'Out of stock' : 'Add to cart'}
+            </Button>
           </div>
 
           {isSoldOut ? (
             <p className="mt-4 text-sm text-neutral-500">
               This product is currently out of stock.
+            </p>
+          ) : null}
+
+          {feedback !== '' && !isSoldOut ? (
+            <p role="status" className="mt-4 text-sm text-neutral-700">
+              {feedback}{' '}
+              <Link
+                to="/cart"
+                className="rounded-sm font-medium text-neutral-950 underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+              >
+                View cart
+              </Link>
             </p>
           ) : null}
         </div>

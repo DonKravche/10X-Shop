@@ -3,6 +3,8 @@ import ProductCard from './ProductCard'
 
 interface ProductGridProps {
   products: Product[]
+  /** Passed straight through to each card (Annex A, P2.3). */
+  onAdd: (product: Product) => void
 }
 
 /**
@@ -15,12 +17,12 @@ interface ProductGridProps {
  * index, so React keeps the right DOM node against the right product when the
  * list changes.
  */
-export default function ProductGrid({ products }: ProductGridProps) {
+export default function ProductGrid({ products, onAdd }: ProductGridProps) {
   return (
     <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {products.map((product) => (
         <li key={product.id} className="flex">
-          <ProductCard product={product} />
+          <ProductCard product={product} onAdd={onAdd} />
         </li>
       ))}
     </ul>

@@ -4,6 +4,7 @@ import Container from '../components/ui/Container'
 import PageHeader from '../components/ui/PageHeader'
 import StateMessage from '../components/ui/StateMessage'
 import { fetchProducts } from '../api/products.api'
+import { useCart } from '../context/cart-context'
 import type { Product } from '../types/product'
 
 type Status = 'loading' | 'success' | 'error'
@@ -19,6 +20,16 @@ export default function CatalogPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [total, setTotal] = useState(0)
   const [status, setStatus] = useState<Status>('loading')
+
+  const { addItem } = useCart()
+
+  /**
+   * The cards report a click and this page decides what it means: lifting the
+   * cart out of the card keeps the card a presentational component.
+   */
+  function handleAdd(product: Product) {
+    addItem(product, 1)
+  }
 
   useEffect(() => {
     // Dropped if the component unmounts before the response arrives, so React
@@ -73,7 +84,7 @@ export default function CatalogPage() {
       ) : null}
 
       {status === 'success' && products.length > 0 ? (
-        <ProductGrid products={products} />
+        <ProductGrid products={products} onAdd={handleAdd} />
       ) : null}
     </Container>
   )

@@ -1,10 +1,16 @@
 import { Link } from 'react-router-dom'
 import type { Product } from '../../types/product'
+import Button from '../ui/Button'
 import ProductPrice from './ProductPrice'
 import StockBadge from './StockBadge'
 
 interface ProductCardProps {
   product: Product
+  /**
+   * Callback prop (Annex A, P2.3). The card does not know what adding to the
+   * cart means; it reports the click and the page decides.
+   */
+  onAdd: (product: Product) => void
 }
 
 /**
@@ -18,7 +24,9 @@ interface ProductCardProps {
  * The image carries width/height and loading="lazy" so the grid reserves its
  * space before the picture arrives and does not shift as rows load (O1).
  */
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, onAdd }: ProductCardProps) {
+  const isSoldOut = product.stock === 0
+
   return (
     <article className="relative flex w-full flex-col rounded-lg border border-neutral-200 bg-white transition-colors hover:border-neutral-400 focus-within:border-neutral-400">
       <div className="aspect-square overflow-hidden rounded-t-lg bg-neutral-50 p-4">
@@ -58,6 +66,18 @@ export default function ProductCard({ product }: ProductCardProps) {
             </span>
             <StockBadge stock={product.stock} />
           </div>
+
+          {/* z-10 lifts the button above the title link's stretched hit area,
+              so clicking Add to cart does not also open the product. */}
+          <Button
+            variant="secondary"
+            fullWidth
+            disabled={isSoldOut}
+            onClick={() => onAdd(product)}
+            className="relative z-10 mt-1"
+          >
+            {isSoldOut ? 'Out of stock' : 'Add to cart'}
+          </Button>
         </div>
       </div>
     </article>

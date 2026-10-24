@@ -1,5 +1,6 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
+import { useCart } from '../../context/cart-context'
 import Container from '../ui/Container'
 
 /*
@@ -23,6 +24,7 @@ const linkClass = ({ isActive }: { isActive: boolean }): string =>
 
 export default function Header() {
   const { user, logout } = useAuth()
+  const { itemCount } = useCart()
   const navigate = useNavigate()
 
   /** Returns to the guest state and goes home. The cart is kept (P0.3). */
@@ -51,6 +53,12 @@ export default function Header() {
             </NavLink>
             <NavLink to="/cart" className={linkClass}>
               Cart
+              {/* The badge is hidden at zero rather than showing "0" (P0.3). */}
+              {itemCount > 0 ? (
+                <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-neutral-950 px-1.5 py-0.5 text-xs font-medium tabular-nums text-white">
+                  {itemCount}
+                </span>
+              ) : null}
             </NavLink>
           </nav>
 
