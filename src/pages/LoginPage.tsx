@@ -50,7 +50,8 @@ export default function LoginPage() {
 
   /**
    * Where to go after signing in: back to the guarded page that sent the user
-   * here, otherwise the catalogue (P1.3).
+   * here, otherwise the catalogue (P1.3) - which is /catalog now that / is the
+   * landing page.
    */
   const redirectTo =
     typeof location.state === 'object' &&
@@ -58,7 +59,7 @@ export default function LoginPage() {
     'from' in location.state &&
     typeof location.state.from === 'string'
       ? location.state.from
-      : '/'
+      : '/catalog'
 
   const formik = useFormik<LoginFormValues>({
     initialValues: EMPTY_FORM,
@@ -150,7 +151,7 @@ export default function LoginPage() {
         </p>
 
         <Link
-          to="/"
+          to="/catalog"
           className="mt-2 inline-flex min-h-11 items-center rounded-sm text-sm text-muted underline underline-offset-2 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           &larr; Back to catalog

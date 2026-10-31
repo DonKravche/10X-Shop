@@ -43,7 +43,7 @@ export default function OrdersPage() {
         <PageHeader title="Orders" />
         <StateMessage fill title="You have no orders yet.">
           <Link
-            to="/"
+            to="/catalog"
             className="inline-flex min-h-11 items-center rounded-md bg-ink px-4 text-sm font-medium text-surface transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Browse products

@@ -170,7 +170,7 @@ function ProductDetails({ productId }: ProductDetailsProps) {
           description="The product service did not respond. Please check your connection and reload the page."
         >
           <Link
-            to="/"
+            to="/catalog"
             className="inline-flex min-h-11 items-center rounded-md border border-strong bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-ground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Back to catalog
@@ -194,7 +194,7 @@ function ProductDetails({ productId }: ProductDetailsProps) {
   return (
     <Container className="py-8">
       <Link
-        to="/"
+        to="/catalog"
         className="mb-4 inline-flex min-h-11 items-center rounded-sm text-sm text-muted underline underline-offset-2 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
       >
         &larr; Back to catalog
@@ -216,7 +216,7 @@ function ProductDetails({ productId }: ProductDetailsProps) {
             {product.brand ? `${product.brand} · ` : ''}
             {/* The category links back into the filtered catalogue (P3.1). */}
             <Link
-              to={`/?category=${encodeURIComponent(product.category)}`}
+              to={`/catalog?category=${encodeURIComponent(product.category)}`}
               className="rounded-sm underline underline-offset-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               {product.category}

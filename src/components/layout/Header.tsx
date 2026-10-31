@@ -77,7 +77,13 @@ export default function Header() {
               Catalog
             </NavLink>
 
-            <NavLink to="/cart" className={linkClass} aria-label="Cart">
+            <NavLink
+              to="/cart"
+              className={linkClass}
+              // The count belongs in the name, not only in the badge: a
+              // screen reader otherwise hears "Cart" and then a bare number.
+              aria-label={itemCount > 0 ? `Cart, ${itemCount} items` : 'Cart, empty'}
+            >
               <CartIcon size={18} />
               <span className="hidden sm:inline">Cart</span>
               {/* Hidden at zero rather than showing "0" (P0.3). */}

@@ -44,7 +44,7 @@ export default function SignUpPage() {
     'from' in location.state &&
     typeof location.state.from === 'string'
       ? location.state.from
-      : '/'
+      : '/catalog'
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target
@@ -142,7 +142,7 @@ export default function SignUpPage() {
         </p>
 
         <Link
-          to="/"
+          to="/catalog"
           className="mt-2 inline-flex min-h-11 items-center rounded-sm text-sm text-muted underline underline-offset-2 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           &larr; Back to catalog

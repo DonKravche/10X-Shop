@@ -21,7 +21,7 @@ export default function NotFoundPage() {
           The page you are looking for does not exist.
         </p>
         <Link
-          to="/"
+          to="/catalog"
           className="mt-6 inline-flex min-h-11 items-center rounded-md bg-ink px-4 text-sm font-medium text-surface transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           Go to catalog
