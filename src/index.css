@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
 /*
+ * Tailwind v4 scans the whole project for candidate class names. docs/ holds
+ * the cross-browser script and the Lighthouse reports, whose selector strings
+ * and inlined HTML were leaking in as real utilities and adding 2.3 kB to this
+ * file. Only src/ and index.html contain markup.
+ */
+@source not "../docs";
+
+/*
  * Plain CSS is allowed alongside Tailwind as a helper (Annex A1.7).
  * Custom @theme design tokens are a FULL requirement (A3-TW / TW5) and are
  * deliberately not used here: the CORE styling is stock Tailwind utilities.
