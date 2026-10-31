@@ -32,10 +32,17 @@ server, no token and no payment. Nothing you type is sent anywhere.
   malformed product ids.
 - Responsive from 375px to desktop, hover/focus/disabled states throughout, and
   an error boundary so a render failure never leaves a blank page.
-- Verified in Chrome 156 and Firefox 142 at 375px and 1440px — 52 of 52
+- Verified in Chrome 156 and Firefox 142 at 375px and 1440px — 68 of 68
   assertions, no horizontal scroll anywhere (`COMPATIBILITY.md`), and a
   Lighthouse mobile audit at 90 performance / 100 accessibility / 100 best
   practices / 0 CLS (`docs/lighthouse/`).
+
+### Implemented (FULL)
+
+- **Sign up** (`/signup`) — a controlled form that claims a username in this
+  browser. The password is kept only as a SHA-256 digest, never in plain text,
+  and a claimed username is then held to it. Any *other* username still signs
+  in, because A1.6 requires that and CORE depends on it.
 
 ### Not implemented (FULL / BONUS)
 
@@ -44,9 +51,10 @@ built first and FULL is not started without instruction:
 
 search and debounce, category filter, sorting, pagination, URL-as-state,
 reviews, related products, promo codes, the orders pages, the profile page,
-dark mode and the theme switch, Formik + Yup, `useReducer`, generics and the
-`ApiClient`/`ApiError` classes, lazy routes and lazy images, Safari and Edge
-testing, and a full keyboard and screen-reader audit.
+dark mode and the theme switch, password recovery (the other half of P1.1),
+Formik + Yup, `useReducer`, the `ApiClient`/`ApiError` classes, lazy routes and
+lazy images, Safari and Edge testing, and a full keyboard and screen-reader
+audit.
 
 ---
 
@@ -79,9 +87,9 @@ src/
     cart/      CartItemRow
     ui/        Button, Container, FormField, PageHeader, QuantityStepper, StateMessage
     ErrorBoundary.tsx
-  pages/       Catalog, Product, Cart, Login, Checkout, NotFound
+  pages/       Catalog, Product, Cart, Login, SignUp, Checkout, NotFound
   routes/      AppRoutes, ProtectedRoute
-  utils/       format.ts (prices), validation.ts (form rules)
+  utils/       format.ts (prices), validation.ts (form rules), password.ts (digests)
 ```
 
 **How data flows.** A page requests data in a `useEffect` through a typed
@@ -125,11 +133,18 @@ npm run dev        # http://localhost:5173
 
 ## Test account
 
-There is no account system. **Any** non-empty username with a password of at
-least 6 characters signs you in — for example `dongi` / `secret123`. The
-username is kept in React Context for the session and is not stored or
-transmitted. Refreshing the page signs you out, which is expected: session
-persistence is not part of this stage.
+There is no server and no real account system. **Any** non-empty username with
+a password of at least 6 characters signs you in — for example
+`emilys` / `emilyspass`. Nothing is sent anywhere.
+
+If you go through **Sign up** instead, the username is claimed in this
+browser's `localStorage` and from then on it needs the password you chose —
+so you can see a login actually refuse you. Everything else still signs in
+freely, which is what Annex A1.6 requires of this demo.
+
+The signed-in session itself lives in React Context, so refreshing signs you
+out. That is expected: session persistence is explicitly not part of CORE
+(P0.2). Claimed accounts do survive a reload.
 
 ---
 

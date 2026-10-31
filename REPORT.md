@@ -8,8 +8,14 @@
 ## 1. Planned vs delivered
 
 The PRD's project rules 1 and 2 require that only CORE is built in the first
-stage and that FULL/BONUS is not started without a further instruction. This
-report covers the CORE stage.
+stage and that FULL/BONUS is not started without a further instruction. CORE
+was built first and is complete apart from the deploy.
+
+**One FULL item has since been built on instruction:** Sign Up (P1.1). It was
+asked for after a fair question about the CORE login — a visitor meets a page
+headed "Log in" with no way to discover that any credentials work, and
+concludes they need an account that does not exist. The rest of FULL remains
+unstarted under rule 2.
 
 ### By module
 
@@ -27,6 +33,7 @@ report covers the CORE stage.
 | --- | --- | --- |
 | P0 Global | Layout, Router, Header, 404, checkout guard, loading/error/empty | Done |
 | P1 Login | Controlled form, required validation, Context update, redirect | Done |
+| P1.1 Sign Up | FULL — local accounts, hashed password, duplicate names refused | Done on instruction |
 | P2 Catalog | `GET /products`, typed data, ProductCard/Grid, navigation, Add to cart | Done |
 | P3 Product | `useParams`, `GET /products/:id`, details, stock states, Add to cart | Done |
 | P4 Cart | Add/change quantity/remove/total, immutable updates | Done |
@@ -47,12 +54,14 @@ FULL part of it, lazy routes and lazy images, was not started.
 - **Deploy (step 24).** The build is verified and `vercel.json` carries the SPA
   rewrite, but publishing needs a Vercel account I cannot authenticate to. See
   §4.
-- **Everything marked FULL.** Search, debounce, category filter, sorting,
+- **The rest of FULL.** Search, debounce, category filter, sorting,
   pagination, URL-as-state, reviews, related products, promo codes, the orders
-  and profile pages, dark mode, Formik + Yup, `useReducer`, generics, the
-  `ApiClient`/`ApiError` classes and lazy routes. Rule 2 forbids starting these
-  without instruction, so they were not started. None of them is blocked by a
-  design decision made here; the notes in §5 record where each would attach.
+  and profile pages, dark mode, Formik + Yup, `useReducer`, the
+  `ApiClient`/`ApiError` classes, lazy routes, and password recovery — the
+  other half of P1.1, left alone because with no server and no email there is
+  nothing to recover a password *through*, so it would be a form that lies.
+  Rule 2 forbids starting any of these without instruction. None is blocked by
+  a design decision made here; the notes in §5 record where each would attach.
 - **The FULL half of O3:** Safari and Edge, and a full keyboard and
   screen-reader audit. `COMPATIBILITY.md` says what each would cover.
 
@@ -62,20 +71,20 @@ FULL part of it, lazy routes and lazy images, was not started.
 
 | Metric | Value |
 | --- | --- |
-| Commits (excluding the initial commit) | 22 at the time of writing — verify with `git rev-list --count HEAD` |
+| Commits (excluding the initial commit) | 28 at the time of writing — verify with `git rev-list --count HEAD` |
 | Days with commits | 2 (24 and 31 October) |
-| Source files in `src/` | 39 (38 TypeScript + `index.css`) |
-| Lines of TypeScript/TSX | 2,232 |
+| Source files in `src/` | 42 (41 TypeScript + `index.css`) |
+| Lines of TypeScript/TSX | 2,694 |
 | Components | 17 |
 | `npm run typecheck` | 0 errors |
 | `npm run lint` | 0 errors, 0 warnings |
 | `npm run build` | succeeds |
-| Bundle, JS | 288.4 kB raw / **88.8 kB gzip** |
+| Bundle, JS | 293.4 kB raw / **89.6 kB gzip** |
 | Bundle, CSS | 17.8 kB raw / 4.5 kB gzip |
 | Occurrences of `any` | 0 (`no-explicit-any` set to error) |
 | Horizontal scroll at 375px | none, measured on all six screens in two browsers |
-| Cross-browser assertions passing | 52 of 52 (Chrome 156, Firefox 142) |
-| Documented bugs in DEBUG-LOG.md | 7 |
+| Cross-browser assertions passing | 68 of 68 (Chrome 156, Firefox 142) |
+| Documented bugs in DEBUG-LOG.md | 8 |
 
 The gzipped JS bundle is 88.8 kB against the 250 kB orientation in O1, with no
 code splitting applied — route-level splitting is a FULL item and was not
@@ -104,12 +113,19 @@ specification asks for.
 
 ### Cross-browser
 
-`COMPATIBILITY.md` carries the matrix. The whole CORE flow — catalogue,
-product, add to cart, cart totals, the checkout guard, login validation, a
-placed order, the three Not-found cases and a direct visit to a deep URL — was
-driven through Chrome 156 and Firefox 142 at 375 × 812 and 1440 × 900, with a
-horizontal-scroll measurement after every step. 52 of 52 assertions pass and
-the two engines showed no layout or behavioural difference.
+`COMPATIBILITY.md` carries the matrix. Seventeen steps — catalogue, product,
+add to cart, cart totals, the checkout guard, login validation, sign up and its
+two account rules, a placed order, the three Not-found cases and a direct visit
+to a deep URL — driven through Chrome 156 and Firefox 142 at 375 × 812 and
+1440 × 900, with a horizontal-scroll measurement after every step. 68 of 68
+assertions pass and the two engines showed no layout or behavioural difference.
+
+The suite was also broken for two commits without anyone noticing, which is
+recorded in `COMPATIBILITY.md` and as entry 8 of `DEBUG-LOG.md` rather than
+quietly fixed. The accessibility fix that moved a card title from `h3` to `h2`
+broke a selector written as `article h3 a`; the application was correct
+throughout, but the document went on asserting a result that could no longer
+be reproduced. Selectors now address behaviour, not markup.
 
 ### Honest note on the Git history
 

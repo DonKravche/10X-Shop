@@ -260,6 +260,64 @@ that worked right up until a user was quick.
 
 ---
 
+## 8. A test suite that had stopped testing
+
+**Symptom.** The cross-browser suite, green at 52 of 52 the day before,
+reported twelve failures across both browsers:
+
+```
+X mobile  / card opens product details :: TimeoutError: locator.click
+X mobile  / add to cart updates the badge
+     :: strict mode violation: getByRole('button', { name: 'Add to cart' })
+        resolved to 12 elements
+X mobile  / cart shows the line and the total :: TimeoutError
+... nine more
+```
+
+**Reproduction.** Run `docs/compat/cross-browser-check.mjs` at any commit from
+`c2d3fa4` onwards.
+
+**Tool.** Reading the failures in order instead of the loudest one. The second
+line is the tell: twelve "Add to cart" buttons means the run is still on the
+catalogue, so the step that was meant to leave it never did. That points at
+step 2, and everything after it is a consequence, not a separate fault.
+
+**Root cause.** Mine, from two commits earlier. `c2d3fa4` moved the product
+card's title from `<h3>` to `<h2>` to fix Lighthouse's heading-order audit.
+The script addressed that link as `article h3 a`. The selector matched
+nothing, the click timed out, and the eleven steps after it failed because the
+run was never on the page they expected.
+
+The application was correct throughout. Only the measurement was broken — and
+`COMPATIBILITY.md` went on claiming 52 of 52 from a run made before the change.
+
+**Fix.** Address the link by where it goes, not by the markup it sits in:
+
+```js
+await page.locator('article a[href^="/products/"]').first().click()
+```
+
+No heading change can break that. Commit
+[`e0aca06`](https://github.com/DonKravche/10X-Shop/commit/e0aca06), which also
+records the stale window in `COMPATIBILITY.md` rather than quietly re-running
+and reporting green.
+
+**What I learned.** Two things, and the second is the uncomfortable one.
+
+A selector should name what the element *does*, not how it is currently
+marked up, or a correct refactor will break the test and the test will look
+like the truth.
+
+And a check only counts from the last time it was run. I fixed an
+accessibility issue, verified it with Lighthouse, and never re-ran the suite
+that the same change had broken — so for two commits the repository carried a
+document asserting a result that could no longer be reproduced. That is the
+same failure as entry 6 wearing different clothes: entry 6 was a check that
+could not fail, this was a check that was not run. Both end with a green light
+that means nothing.
+
+---
+
 ## Checking the error boundary
 
 Not a bug, but worth recording since the boundary is otherwise invisible.
