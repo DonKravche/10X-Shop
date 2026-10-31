@@ -1,15 +1,21 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { AuthUser, LoginResult, SignUpResult, StoredAccount } from '../types/user'
+import type {
+  AuthUser,
+  LoginResult,
+  SignUpResult,
+  StoredAccount,
+  UserStore,
+} from '../types/user'
+import { userStorage } from '../models/storage'
 import { hashPassword } from '../utils/password'
 import { AuthContext, GUEST } from './auth-context'
-
-/** Annex A1.5 names this key for local user data. */
-const STORAGE_KEY = 'shop_user'
 
 interface AuthProviderProps {
   children: ReactNode
 }
+
+const EMPTY_STORE: UserStore = { accounts: [], session: null }
 
 /**
  * Narrows one parsed value to a StoredAccount.
@@ -30,29 +36,25 @@ function isStoredAccount(value: unknown): value is StoredAccount {
   )
 }
 
-/** Reads the claimed accounts, falling back to none on anything unexpected. */
-function readAccounts(): StoredAccount[] {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (raw === null) return []
+/** The stored accounts and session, with anything unexpected dropped. */
+function readStore(): UserStore {
+  const raw: unknown = userStorage.get()
+  if (typeof raw !== 'object' || raw === null) return EMPTY_STORE
 
-    const parsed: unknown = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-
-    return parsed.filter(isStoredAccount)
-  } catch {
-    // Corrupt JSON, or storage blocked in a private window: behave as though
-    // nobody has signed up rather than taking the application down.
-    return []
+  // An earlier build wrote a bare array of accounts under this key. Reading
+  // it rather than discarding it means a sign-up made before this change
+  // survives instead of silently disappearing.
+  if (Array.isArray(raw)) {
+    return { accounts: raw.filter(isStoredAccount), session: null }
   }
-}
 
-function writeAccounts(accounts: StoredAccount[]): void {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts))
-  } catch {
-    // Storage can be full or blocked. The sign-up still signs the visitor in
-    // for this session, so failing to save must not break the page.
+  const store = raw as Partial<UserStore>
+  return {
+    accounts: Array.isArray(store.accounts)
+      ? store.accounts.filter(isStoredAccount)
+      : [],
+    session:
+      typeof store.session === 'string' && store.session !== '' ? store.session : null,
   }
 }
 
@@ -65,18 +67,28 @@ function findAccount(accounts: StoredAccount[], username: string) {
 /**
  * Holds the login state for the whole application.
  *
- * Annex A, P0.2 allows the signed-in state to be lost on refresh, so the
- * current session is React state only. The accounts registry is different:
- * a sign-up that disappeared on reload would not be a sign-up, so that part
- * is persisted.
+ * The session is restored on load. P0.2 allows it to be lost on refresh but
+ * does not require that, and Orders and Profile are guarded routes whose data
+ * outlives the tab: without persistence a shopper would be sent to the login
+ * page every time they reloaded their own order history.
  */
 export default function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<AuthUser>(GUEST)
+  const [user, setUser] = useState<AuthUser>(() => {
+    const { session } = readStore()
+    return session === null ? GUEST : { username: session, isLoggedIn: true }
+  })
+
+  /** Signs in and records it, so a reload does not undo it. */
+  const startSession = useCallback((username: string) => {
+    const store = readStore()
+    userStorage.set({ ...store, session: username })
+    setUser({ username, isLoggedIn: true })
+  }, [])
 
   const login = useCallback(
     async (username: string, password: string): Promise<LoginResult> => {
       const trimmed = username.trim()
-      const account = findAccount(readAccounts(), trimmed)
+      const account = findAccount(readStore().accounts, trimmed)
 
       if (account !== undefined) {
         // A claimed username is held to the password it was claimed with.
@@ -95,24 +107,24 @@ export default function AuthProvider({ children }: AuthProviderProps) {
           return { ok: false, field: 'password', message: 'Incorrect password' }
         }
 
-        setUser({ username: account.username, isLoggedIn: true })
+        startSession(account.username)
         return { ok: true }
       }
 
       // Not claimed: sign in anyway. A1.6 requires any non-empty username to
       // work, and the CORE Measurable Outcome for P1 is written around it.
-      setUser({ username: trimmed, isLoggedIn: true })
+      startSession(trimmed)
       return { ok: true }
     },
-    [],
+    [startSession],
   )
 
   const signUp = useCallback(
     async (username: string, password: string): Promise<SignUpResult> => {
       const trimmed = username.trim()
-      const accounts = readAccounts()
+      const store = readStore()
 
-      if (findAccount(accounts, trimmed) !== undefined) {
+      if (findAccount(store.accounts, trimmed) !== undefined) {
         return {
           ok: false,
           field: 'username',
@@ -132,15 +144,23 @@ export default function AuthProvider({ children }: AuthProviderProps) {
         }
       }
 
-      writeAccounts([...accounts, { username: trimmed, passwordHash }])
+      userStorage.set({
+        accounts: [...store.accounts, { username: trimmed, passwordHash }],
+        session: trimmed,
+      })
       setUser({ username: trimmed, isLoggedIn: true })
       return { ok: true }
     },
     [],
   )
 
-  /** Returns to the guest state. The cart is deliberately untouched (P0.3). */
+  /**
+   * Returns to the guest state. The claimed accounts stay - signing out is
+   * not deleting an account - and the cart is untouched (P0.3).
+   */
   const logout = useCallback(() => {
+    const store = readStore()
+    userStorage.set({ ...store, session: null })
     setUser(GUEST)
   }, [])
 

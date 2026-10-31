@@ -2,7 +2,7 @@ import { StorageService } from './StorageService'
 import type { CartState } from '../types/cart'
 import type { Order } from '../types/order'
 import type { Review } from '../types/product'
-import type { StoredAccount } from '../types/user'
+import type { UserStore } from '../types/user'
 import type { ThemeName } from '../types/theme'
 
 /**
@@ -23,7 +23,7 @@ export const STORAGE_KEYS = {
 export type StoredReviews = Record<number, Review[]>
 
 export const cartStorage = new StorageService<CartState>(STORAGE_KEYS.cart)
-export const accountStorage = new StorageService<StoredAccount[]>(STORAGE_KEYS.user)
+export const userStorage = new StorageService<UserStore>(STORAGE_KEYS.user)
 export const orderStorage = new StorageService<Order[]>(STORAGE_KEYS.orders)
 export const reviewStorage = new StorageService<StoredReviews>(STORAGE_KEYS.reviews)
 export const themeStorage = new StorageService<ThemeName>(STORAGE_KEYS.theme)

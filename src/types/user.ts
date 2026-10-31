@@ -58,3 +58,21 @@ export type AuthResult<Field extends string> =
 export type LoginResult = AuthResult<keyof LoginFormValues>
 
 export type SignUpResult = AuthResult<keyof SignUpFormValues>
+
+/**
+ * Everything kept under the `shop_user` key (Annex A1.5).
+ *
+ * A1.5 describes that key as optionally holding "only a username or a login
+ * boolean". It holds both halves of that here: who has signed up, and who is
+ * signed in now.
+ *
+ * The session is persisted because Orders and Profile are guarded and their
+ * data outlives the tab. P0.2 allows the signed-in state to be lost on
+ * refresh; it does not require it, and losing it would mean a shopper was
+ * bounced to the login page every time they reloaded their own order history.
+ */
+export interface UserStore {
+  accounts: StoredAccount[]
+  /** The signed-in username, or null for a guest. */
+  session: string | null
+}
