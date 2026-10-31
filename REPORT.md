@@ -1,6 +1,6 @@
 # 10X Shop — Final report
 
-**Author:** Dongi · **Date:** 24 October 2026
+**Author:** Dongi · **Date:** 24 October 2026, revised 31 October 2026
 **Repository:** https://github.com/DonKravche/10X-Shop
 
 ---
@@ -18,7 +18,7 @@ report covers the CORE stage.
 | **React** | Function components, props + children, `useState`/`useEffect`, `map()` with stable keys, controlled Login and Checkout, Router, Context, cart with immutable updates | **Done** |
 | **TypeScript** | `strict: true`, typed props/state/API, `tsc --noEmit` at 0, no `any` | **Done** |
 | **Tailwind CSS** | v4 integration, utility-first styling, Flex/Grid, mobile-first responsive, hover/focus/disabled | **Done** |
-| **Optimization** | Responsive pages, Error Boundary, DEBUG-LOG, basic error handling | **Done** |
+| **Optimization** | Responsive pages, Error Boundary, DEBUG-LOG, basic error handling, Lighthouse report, Chrome + Firefox check | **Done** |
 | **Practical project** | README, PLAN.md, REPORT.md, real Git history, deploy | **Done except deploy** |
 
 ### By page
@@ -36,8 +36,11 @@ report covers the CORE stage.
 
 ### Against the 28 steps
 
-Steps 1–8, 10–16 and 19–23 and 25 are complete. Step 24 (deploy) is prepared
-but not executed. Steps 9, 17, 18, 26 and 27 are FULL and were not started.
+Steps 1–8, 10–16, 19–23 and 25 are complete. Step 24 (deploy) is prepared but
+not executed. Steps 9, 17, 18 and 27 are FULL and were not started. Step 26 is
+listed as FULL but overlaps two CORE obligations — the Lighthouse report in O1
+and the Chrome + Firefox check in O3 — and both of those are now done; the
+FULL part of it, lazy routes and lazy images, was not started.
 
 ### Not delivered, and why
 
@@ -47,10 +50,11 @@ but not executed. Steps 9, 17, 18, 26 and 27 are FULL and were not started.
 - **Everything marked FULL.** Search, debounce, category filter, sorting,
   pagination, URL-as-state, reviews, related products, promo codes, the orders
   and profile pages, dark mode, Formik + Yup, `useReducer`, generics, the
-  `ApiClient`/`ApiError` classes, lazy routes and Lighthouse targets. Rule 2
-  forbids starting these without instruction, so they were not started. None
-  of them is blocked by a design decision made here; the notes in §5 record
-  where each would attach.
+  `ApiClient`/`ApiError` classes and lazy routes. Rule 2 forbids starting these
+  without instruction, so they were not started. None of them is blocked by a
+  design decision made here; the notes in §5 record where each would attach.
+- **The FULL half of O3:** Safari and Edge, and a full keyboard and
+  screen-reader audit. `COMPATIBILITY.md` says what each would cover.
 
 ---
 
@@ -58,35 +62,72 @@ but not executed. Steps 9, 17, 18, 26 and 27 are FULL and were not started.
 
 | Metric | Value |
 | --- | --- |
-| Commits (excluding the initial commit) | 17 at the time of writing — verify with `git rev-list --count HEAD` |
-| Days with commits | 1 (24 October) |
+| Commits (excluding the initial commit) | 22 at the time of writing — verify with `git rev-list --count HEAD` |
+| Days with commits | 2 (24 and 31 October) |
 | Source files in `src/` | 39 (38 TypeScript + `index.css`) |
-| Lines of TypeScript/TSX | 2,177 |
+| Lines of TypeScript/TSX | 2,232 |
 | Components | 17 |
 | `npm run typecheck` | 0 errors |
 | `npm run lint` | 0 errors, 0 warnings |
 | `npm run build` | succeeds |
-| Bundle, JS | 281.3 kB raw / **85.7 kB gzip** |
-| Bundle, CSS | 17.3 kB raw / 4.3 kB gzip |
+| Bundle, JS | 288.4 kB raw / **88.8 kB gzip** |
+| Bundle, CSS | 17.8 kB raw / 4.5 kB gzip |
 | Occurrences of `any` | 0 (`no-explicit-any` set to error) |
-| Horizontal scroll at 375px | none on any CORE page |
-| Documented bugs in DEBUG-LOG.md | 6 |
+| Horizontal scroll at 375px | none, measured on all six screens in two browsers |
+| Cross-browser assertions passing | 52 of 52 (Chrome 156, Firefox 142) |
+| Documented bugs in DEBUG-LOG.md | 7 |
 
-The gzipped JS bundle is 85.7 kB against the 250 kB orientation in O1, with no
+The gzipped JS bundle is 88.8 kB against the 250 kB orientation in O1, with no
 code splitting applied — route-level splitting is a FULL item and was not
 needed to stay inside the budget.
 
-Lighthouse before/after figures are **not** included: O1 lists them as FULL and
-they are meant to be measured against the deployed site, which does not exist
-yet.
+### Lighthouse
+
+Mobile preset, Lighthouse 12.8.2, against the production bundle served by
+`npm run preview`. Full reports in `docs/lighthouse/`; the method and the
+caveats are in `docs/lighthouse/README.md`.
+
+| Metric | Before | After | Target (O1) | What changed |
+| --- | --- | --- | --- | --- |
+| Performance | 90 | 90 | ≥ 85 | — |
+| Accessibility | 98 | **100** | ≥ 90 | `heading-order`: product-card and cart-line titles went from `h3` to `h2`, so the heading order no longer skips a level under the page `h1` |
+| Best Practices | 100 | 100 | ≥ 90 | — |
+| Cumulative Layout Shift | 0 | 0 | < 0.1 | — |
+| SEO | 92 | 92 | not a target | — |
+
+All four targets are met. Two honest qualifications: these were measured
+against **localhost, not the deployment**, so the timing metrics are optimistic
+and must be re-run on the live URL; and one audit, `robots-txt`, still fails
+because the SPA rewrite returns `index.html` for every path. That affects only
+SEO, which O1 sets no target for, and the fix is not something the
+specification asks for.
+
+### Cross-browser
+
+`COMPATIBILITY.md` carries the matrix. The whole CORE flow — catalogue,
+product, add to cart, cart totals, the checkout guard, login validation, a
+placed order, the three Not-found cases and a direct visit to a deep URL — was
+driven through Chrome 156 and Firefox 142 at 375 × 812 and 1440 × 900, with a
+horizontal-scroll measurement after every step. 52 of 52 assertions pass and
+the two engines showed no layout or behavioural difference.
 
 ### Honest note on the Git history
 
-Every commit falls on one day. The PRD's FULL guidance suggests 40+ commits
-across 15+ days; the CORE requirement is only a real, meaningful history, which
-this is — each commit is one step of the documented sequence, with the
-verification done for it recorded in the message. But it does not evidence work
-spread over three weeks, and I am not going to present it as though it does.
+The commits fall on two days, 24 and 31 October. The PRD's FULL guidance
+suggests 40+ commits across 15+ days; the CORE requirement is only a real,
+meaningful history, which this is — each commit is one step of the documented
+sequence, with the verification done for it recorded in the message. But two
+days do not evidence work spread over three weeks, and I am not going to
+present it as though they do.
+
+One thing worth recording because it looked like data loss: on 31 October the
+GitHub repository appeared to contain nothing but the initial commit, and the
+history looked deleted. It was not. All seventeen commits were sitting on the
+local `main`, which had never been pushed — `git log origin/main` showed one
+commit, `git log main` showed eighteen. `git push origin main` was a clean
+fast-forward and restored the whole history. Nothing was ever lost; it had
+simply never left the machine. The lesson is that a commit is not a backup, and
+`git status` says so in its second line if you read it.
 
 ---
 
@@ -137,14 +178,19 @@ because it was the most instructive failure of the project.
 
 ## 4. Outstanding work
 
-1. **Deploy to Vercel and put the URL in the README.** `npm run build` then
-   `npx vercel --prod`. Afterwards confirm that `/products/5` opens from a cold
+1. **Deploy to Vercel and put the URL in the README.** This is the one CORE
+   requirement still open. `npm run build` then `npx vercel --prod`; publishing
+   needs an interactive login to a Vercel account, which is why it has not been
+   done from here. Afterwards confirm that `/products/5` opens from a cold
    visit — `vercel.json` already rewrites every path to `/index.html`, and the
-   same behaviour was verified locally against the production bundle with
-   `npm run preview`.
-2. **Spread the Git history** over the remaining days if further work happens,
+   behaviour was verified against the production bundle locally and in both
+   browsers (row 13 of `COMPATIBILITY.md`).
+2. **Re-run Lighthouse against the live URL**, in an incognito window, and
+   replace the figures in §2. The current ones come from localhost, where the
+   network is effectively free, so the timing metrics are optimistic.
+3. **Spread the Git history** over the remaining days if further work happens,
    rather than retrofitting dates.
-3. **Decide on FULL.** Nothing in CORE blocks any of it.
+4. **Decide on FULL.** Nothing in CORE blocks any of it.
 
 ---
 
