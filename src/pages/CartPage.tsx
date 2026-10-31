@@ -1,20 +1,34 @@
 import { Link, useLocation } from 'react-router-dom'
 import CartItemRow from '../components/cart/CartItemRow'
+import CartSummary from '../components/cart/CartSummary'
+import PromoForm from '../components/cart/PromoForm'
 import Container from '../components/ui/Container'
 import PageHeader from '../components/ui/PageHeader'
 import StateMessage from '../components/ui/StateMessage'
 import { useCart } from '../context/cart-context'
-import { formatPrice } from '../utils/format'
+import { useToast } from '../context/toast-context'
 
 /**
- * Annex A, P4. The cart: change quantities, remove lines, see the total.
+ * Annex A, P4. The cart: change quantities, remove lines, apply a code and
+ * see what it all comes to.
  *
- * Discount and Shipping rows are absent from the summary because promo codes
- * and shipping thresholds are both FULL (P4.3, P4.4). CORE shows what the
- * customer actually owes: the subtotal and the total.
+ * None of the arithmetic happens here. The Cart class answers every money
+ * question (P4.3), which is what keeps this page and the checkout summary
+ * from ever disagreeing.
  */
 export default function CartPage() {
-  const { items, itemCount, subtotal, setQuantity, removeItem, clear } = useCart()
+  const {
+    items,
+    itemCount,
+    cart,
+    promoCode,
+    setQuantity,
+    removeItem,
+    clear,
+    applyPromo,
+    removePromo,
+  } = useCart()
+  const { showToast } = useToast()
   const location = useLocation()
 
   /** Set when CheckoutPage bounced an empty cart back here (P5.1). */
@@ -29,6 +43,17 @@ export default function CartPage() {
     if (window.confirm('Clear the cart? This cannot be undone.')) {
       clear()
     }
+  }
+
+  function handleRemove(productId: number) {
+    removeItem(productId)
+    showToast('Removed from cart')
+  }
+
+  function handleApplyPromo(code: string): boolean {
+    const applied = applyPromo(code)
+    if (applied) showToast('Promo code applied ✓')
+    return applied
   }
 
   if (items.length === 0) {
@@ -46,7 +71,7 @@ export default function CartPage() {
         >
           <Link
             to="/"
-            className="inline-flex min-h-11 items-center rounded-md bg-neutral-950 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className="inline-flex min-h-11 items-center rounded-md bg-ink px-4 text-sm font-medium text-surface transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Browse products
           </Link>
@@ -64,13 +89,13 @@ export default function CartPage() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <ul className="rounded-lg border border-neutral-200 bg-white px-5">
+          <ul className="rounded-lg border border-line bg-surface px-5">
             {items.map((item) => (
               <CartItemRow
                 key={item.productId}
                 item={item}
                 onQuantityChange={setQuantity}
-                onRemove={removeItem}
+                onRemove={handleRemove}
               />
             ))}
           </ul>
@@ -78,36 +103,23 @@ export default function CartPage() {
           <button
             type="button"
             onClick={handleClear}
-            className="mt-4 min-h-11 rounded-md px-2 text-sm text-neutral-600 underline underline-offset-2 transition-colors hover:text-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className="mt-4 min-h-11 rounded-md px-2 text-sm text-muted underline underline-offset-2 transition-colors hover:text-red-700 dark:text-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Clear cart
           </button>
         </div>
 
         <aside className="lg:col-span-1">
-          <div className="rounded-lg border border-neutral-200 bg-white p-5">
-            <h2 className="text-base font-medium text-neutral-950">Summary</h2>
-
-            <dl className="mt-4 space-y-3 text-sm">
-              <div className="flex items-baseline justify-between gap-4">
-                <dt className="text-neutral-600">Subtotal</dt>
-                <dd className="tabular-nums text-neutral-950">{formatPrice(subtotal)}</dd>
-              </div>
-              <div className="flex items-baseline justify-between gap-4 border-t border-neutral-200 pt-3">
-                <dt className="font-medium text-neutral-950">Total</dt>
-                <dd className="text-lg font-bold tabular-nums text-neutral-950">
-                  {formatPrice(subtotal)}
-                </dd>
-              </div>
-            </dl>
+          <CartSummary cart={cart} promoCode={promoCode} onRemovePromo={removePromo}>
+            {promoCode === null ? <PromoForm onApply={handleApplyPromo} /> : null}
 
             <Link
               to="/checkout"
-              className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-neutral-950 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+              className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-ink px-4 text-sm font-medium text-surface transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               Proceed to checkout
             </Link>
-          </div>
+          </CartSummary>
         </aside>
       </div>
     </Container>
