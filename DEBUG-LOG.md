@@ -366,6 +366,116 @@ request was.
 
 ---
 
+## 10. Placing an order sent the customer to the empty cart
+
+**Symptom.** "Place order" wrote the order correctly and then landed on
+`/cart` showing "Your cart is empty." instead of the order's page. The order
+existed in `shop_orders`; the customer just never saw it.
+
+**Reproduction.** Fill the checkout form and submit. The end-to-end suite
+caught it as `waitForURL(/\/orders\/\d+$/)` timing out with the browser
+sitting on `/cart`.
+
+**Tool.** The test, and then reading `handleSubmit` in order of what React
+does rather than in order of what I wrote.
+
+**Root cause.** Two navigations raced and the wrong one won:
+
+```ts
+orderStorage.set([order.toJSON(), ...previous])
+clear()                                     // cart becomes empty
+navigate(`/orders/${order.id}`, ...)        // ...but this runs after a render
+```
+
+`clear()` empties the cart, which re-renders CheckoutPage, which hits its own
+guard at the top:
+
+```ts
+if (items.length === 0) {
+  return <Navigate to="/cart" replace state={{ from: 'checkout-empty' }} />
+}
+```
+
+That guard exists for a real case - opening checkout with nothing in the cart -
+but it cannot tell "you have not added anything" from "you have just bought
+it all". The CORE version had been immune by accident: it kept the
+confirmation on the same page and the guard read
+`items.length === 0 && placedOrder === null`. Moving the confirmation to the
+order's own page removed `placedOrder` and with it the thing that had been
+holding the guard off.
+
+**Fix.** Say which case it is, explicitly:
+
+```ts
+if (items.length === 0 && !hasPlaced) { ... }
+```
+
+`setHasPlaced(true)` runs before `clear()`, so the guard knows the cart is
+empty because the order succeeded. Commit
+[`4aeb570`](https://github.com/DonKravche/10X-Shop/commit/4aeb570).
+
+**What I learned.** A guard that tests a *symptom* instead of a *reason* will
+eventually fire on the wrong one. "The cart is empty" was never the real
+condition; "the customer has nothing to check out" was, and those two
+coincided right up until emptying the cart became something checkout did on
+purpose. The condition that made it safe was deleted two commits earlier as
+part of an unrelated refactor, with nothing to say it mattered.
+
+---
+
+## 11. An order page whose own figures did not add up
+
+**Symptom.** The order detail page showed three numbers that contradict each
+other:
+
+```
+Subtotal    $34.25
+Discount    -$3.43
+Total       $40.82
+```
+
+34.25 − 3.43 is 30.82, not 40.82. Every individual figure was right; the
+screen as a whole was wrong by exactly $10.
+
+**Reproduction.** Place any order whose total after discount is under $100, so
+shipping is charged, then open it from `/orders`.
+
+**Tool.** The design review's own checklist, which asks in writing: *do the
+numbers add up, and do the copies of a fact agree?* I had tested that the cart
+total equalled the order total — and it did — so every assertion I had written
+passed while the page still lied.
+
+**Root cause.** `Cart.total()` is `subtotal − discount + shipping`, and
+`OrderModel.create` stored `subtotal`, `discount` and `total` but not the
+shipping. The totals panel then rendered the three fields it had. The $10 was
+not missing from the arithmetic, only from the page, so the reader was shown
+two operands and a result that needed a third.
+
+A1.5's `Order` interface lists `shippingCost` and I had dropped it as unused
+while trimming the model to what was really implemented — which was the right
+instinct applied to the wrong field, because the detail page was about to
+need it.
+
+**Fix.** Store `shippingCost` (A1.5's name; `shipping` was already the
+address) and show the row whether it is free or charged. Orders written before
+the change are repaired on read rather than dropped: the value is recoverable
+exactly, because the total was always subtotal − discount + shipping. Commit
+[`edab5df`](https://github.com/DonKravche/10X-Shop/commit/edab5df).
+
+**Verification.** A real order, end to end: cart reads 8.94 − 0.89 + 10 =
+18.05 and shows 18.05; the order shows the same four figures and the same
+total.
+
+**What I learned.** Testing that two screens agree is not the same as testing
+that either one is right — both can be consistently wrong, and mine were. The
+question that found this was not "does the code work" but "would a reader with
+a calculator believe this page", and no assertion I had written was asking it.
+It is also a lesson about trimming a model to what is "really used": that is
+correct, but the check has to be what the *screens* need, not what the code
+currently compiles without.
+
+---
+
 ## Checking the error boundary
 
 Not a bug, but worth recording since the boundary is otherwise invisible.

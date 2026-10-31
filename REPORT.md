@@ -11,21 +11,26 @@ The PRD's project rules 1 and 2 require that only CORE is built in the first
 stage and that FULL/BONUS is not started without a further instruction. CORE
 was built first and is complete apart from the deploy.
 
-**One FULL item has since been built on instruction:** Sign Up (P1.1). It was
-asked for after a fair question about the CORE login — a visitor meets a page
-headed "Log in" with no way to discover that any credentials work, and
-concludes they need an account that does not exist. The rest of FULL remains
-unstarted under rule 2.
+**FULL has since been built on instruction**, in the order Annex A lists it.
+The request came after a fair question about the CORE login - a visitor meets a
+page headed "Log in" with no way to discover that any credentials work - and
+then widened to the rest of FULL. What remains unstarted is listed below with
+its reason.
 
 ### By module
 
 | Module | CORE requirement | Status |
 | --- | --- | --- |
 | **React** | Function components, props + children, `useState`/`useEffect`, `map()` with stable keys, controlled Login and Checkout, Router, Context, cart with immutable updates | **Done** |
+| **React (FULL)** | Custom hooks (`useDebounce`, `useNow`), `useReducer` with a discriminated union, Formik + Yup on Login, toasts, advanced routes | **Done** |
 | **TypeScript** | `strict: true`, typed props/state/API, `tsc --noEmit` at 0, no `any` | **Done** |
+| **TypeScript (FULL)** | Generics (`ApiClient.get<T>`, `StorageService<T>`, `AsyncState<T>`, `AuthResult<Field>`), `ApiError`, OOP (`Cart`, `OrderModel`), type guards, literal + discriminated unions, `as const` keys | **Done** |
 | **Tailwind CSS** | v4 integration, utility-first styling, Flex/Grid, mobile-first responsive, hover/focus/disabled | **Done** |
+| **Tailwind CSS (FULL/BONUS)** | Seven design tokens in `@theme` (TW5), dark mode through a custom variant (TW6) | **Done** |
 | **Optimization** | Responsive pages, Error Boundary, DEBUG-LOG, basic error handling, Lighthouse report, Chrome + Firefox check | **Done** |
+| **Optimization (FULL)** | Route-level code splitting, debounce + AbortController, memoised totals and derived lists | **Done** |
 | **Practical project** | README, PLAN.md, REPORT.md, real Git history, deploy | **Done except deploy** |
+| **Practical project (FULL)** | Three weekly progress notes in `docs/progress/` | **Done**; Issues/Projects, PR flow and the demo video are not |
 
 ### By page
 
@@ -35,35 +40,45 @@ unstarted under rule 2.
 | P1 Login | Controlled form, required validation, Context update, redirect | Done |
 | P1.1 Sign Up | FULL — local accounts, hashed password, duplicate names refused | Done on instruction |
 | P2 Catalog | `GET /products`, typed data, ProductCard/Grid, navigation, Add to cart | Done |
+| P2.2-P2.8 Catalog FULL | Skeletons, Retry, AbortController, search + debounce, category, sort, pagination, URL-as-state | Done |
 | P3 Product | `useParams`, `GET /products/:id`, details, stock states, Add to cart | Done |
+| P3.4-P3.5 Product FULL | Tabs, reviews with a live average, related products | Done |
 | P4 Cart | Add/change quantity/remove/total, immutable updates | Done |
+| P4.2-P4.4 Cart FULL | `useReducer` + discriminated union, `Cart` class, promo code `10X10` | Done |
 | P5 Checkout | Four controlled fields, validation, local order confirmation | Done |
-| P6 Orders | FULL only | Not started (by rule 2) |
-| P7 Profile | FULL only | Not started (by rule 2) |
+| P6 Orders | FULL - list, detail, status simulation, Reorder | Done |
+| P7 Profile | FULL - details form, order count, theme, Clear local data | Done |
 
 ### Against the 28 steps
 
-Steps 1–8, 10–16, 19–23 and 25 are complete. Step 24 (deploy) is prepared but
-not executed. Steps 9, 17, 18 and 27 are FULL and were not started. Step 26 is
-listed as FULL but overlaps two CORE obligations — the Lighthouse report in O1
-and the Chrome + Firefox check in O3 — and both of those are now done; the
-FULL part of it, lazy routes and lazy images, was not started.
+All twenty-eight except step 24. Steps 1–23 and 25–28 are complete, including
+the four that are FULL: 9 (search, category, sort, pagination, URL state),
+17 (reviews, related products, promo code, the cart's reducer), 18
+(Orders/Profile, custom hooks, Formik + Yup) and 26–27 (lazy loading, the
+Lighthouse report, the cross-browser matrix, `@theme`, generics, OOP).
+
+Step 24, deploy, is prepared but not executed — it is the one requirement of
+any level still open.
 
 ### Not delivered, and why
 
 - **Deploy (step 24).** The build is verified and `vercel.json` carries the SPA
   rewrite, but publishing needs a Vercel account I cannot authenticate to. See
   §4.
-- **The rest of FULL.** Search, debounce, category filter, sorting,
-  pagination, URL-as-state, reviews, related products, promo codes, the orders
-  and profile pages, dark mode, Formik + Yup, `useReducer`, the
-  `ApiClient`/`ApiError` classes, lazy routes, and password recovery — the
-  other half of P1.1, left alone because with no server and no email there is
-  nothing to recover a password *through*, so it would be a form that lies.
-  Rule 2 forbids starting any of these without instruction. None is blocked by
-  a design decision made here; the notes in §5 record where each would attach.
+- **Password recovery**, the other half of P1.1. With no server and no email
+  there is nothing to recover a password *through*, so the form could only
+  pretend. It is the one FULL item left undone by choice rather than by time.
 - **The FULL half of O3:** Safari and Edge, and a full keyboard and
-  screen-reader audit. `COMPATIBILITY.md` says what each would cover.
+  screen-reader audit. `COMPATIBILITY.md` says what each would cover; Edge is
+  installed here but shares Chrome's engine, so it would not add a third
+  result.
+- **The FULL half of D.** GitHub Issues and Projects, the twenty issues, the
+  milestones, the eight pull requests and the demo video. The three weekly
+  progress notes are done; the rest is process evidence that cannot honestly
+  be manufactured after the fact, for the same reason the commit dates cannot.
+- **The BONUS list.** Infinite scroll, a price-range filter, a wishlist, a
+  grid/list toggle, search history, order cancellation and invoice PDFs — all
+  listed as Out of Scope by their own sections of Annex A.
 
 ---
 
@@ -71,24 +86,26 @@ FULL part of it, lazy routes and lazy images, was not started.
 
 | Metric | Value |
 | --- | --- |
-| Commits (excluding the initial commit) | 28 at the time of writing — verify with `git rev-list --count HEAD` |
+| Commits (excluding the initial commit) | 47 at the time of writing — verify with `git rev-list --count HEAD` |
 | Days with commits | 2 (24 and 31 October) |
-| Source files in `src/` | 42 (41 TypeScript + `index.css`) |
-| Lines of TypeScript/TSX | 2,694 |
-| Components | 17 |
+| Source files in `src/` | 71 (70 TypeScript + `index.css`) |
+| Lines of TypeScript/TSX | 5,145 |
+| Components | 26 |
 | `npm run typecheck` | 0 errors |
 | `npm run lint` | 0 errors, 0 warnings |
 | `npm run build` | succeeds |
-| Bundle, JS | 293.4 kB raw / **89.6 kB gzip** |
-| Bundle, CSS | 17.8 kB raw / 4.5 kB gzip |
+| Bundle, JS (entry chunk) | 241.2 kB raw / **75.1 kB gzip**, split across 14 route chunks |
+| Bundle, CSS | 24.0 kB raw / 5.7 kB gzip |
 | Occurrences of `any` | 0 (`no-explicit-any` set to error) |
 | Horizontal scroll at 375px | none, measured on all six screens in two browsers |
 | Cross-browser assertions passing | 68 of 68 (Chrome 156, Firefox 142) |
-| Documented bugs in DEBUG-LOG.md | 8 |
+| End-to-end assertions passing | 40 of 40 across four suites |
+| Documented bugs in DEBUG-LOG.md | 11 |
 
-The gzipped JS bundle is 88.8 kB against the 250 kB orientation in O1, with no
-code splitting applied — route-level splitting is a FULL item and was not
-needed to stay inside the budget.
+The entry chunk is 75.1 kB gzipped against the 250 kB orientation in O1.
+Route-level splitting (O1) put each page in its own chunk, which matters most
+for Formik and Yup: they weigh 79.8 kB and are only downloaded by someone who
+actually opens the login page.
 
 ### Lighthouse
 

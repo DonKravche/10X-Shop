@@ -25,24 +25,27 @@ npx lighthouse@12.8.2 http://localhost:4173/ \
   localhost the network is effectively instantaneous, so the three timing
   metrics are optimistic — treat Performance as an upper bound, not a result.
 
-`before` is the run that found the problem; `after` is the same audit once it
-was fixed. Nothing else changed between them.
+`before` is the CORE build, and the run that found `heading-order`. `after` is
+the finished FULL build: the heading fix plus everything built since, including
+route-level code splitting. So the accessibility change is attributable to one
+edit, and the rest of the table is a comparison of two different builds rather
+than a controlled before and after.
 
 ## Results
 
 | Metric | Before | After | Target (O1) | What changed |
 | --- | --- | --- | --- | --- |
-| Performance | 90 | 90 | ≥ 85 | — |
+| Performance | 90 | 89 | ≥ 85 | Measurement noise plus the extra per-route requests; still well over target |
 | Accessibility | 98 | **100** | ≥ 90 | `heading-order` fixed |
 | Best Practices | 100 | 100 | ≥ 90 | — |
 | SEO | 92 | 92 | not a target | — |
 | Cumulative Layout Shift | 0 | 0 | < 0.1 | — |
-| Largest Contentful Paint | 2.9 s | 2.9 s | — | — |
+| Largest Contentful Paint | 2.9 s | 3.0 s | — | — |
 | First Contentful Paint | 2.5 s | 2.5 s | — | — |
 | Total Blocking Time | 0 ms | 0 ms | — | — |
-| Speed Index | 4.2 s | 4.2 s | — | — |
+| Speed Index | 4.2 s | 4.1 s | — | — |
 
-All four O1 targets are met.
+All four O1 targets are met. The "after" run is against the fully FULL build with route-level code splitting: the main chunk is 241.2 kB raw / 75.1 kB gzip, against the 250 kB orientation in O1.
 
 CLS is a flat 0 because every image on the page carries explicit `width` and
 `height`, so the grid reserves each card's space before the picture arrives.

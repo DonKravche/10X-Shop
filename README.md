@@ -39,21 +39,39 @@ server, no token and no payment. Nothing you type is sent anywhere.
 
 ### Implemented (FULL)
 
-- **Sign up** (`/signup`) — a controlled form that claims a username in this
-  browser. The password is kept only as a SHA-256 digest, never in plain text,
-  and a claimed username is then held to it. Any *other* username still signs
-  in, because A1.6 requires that and CORE depends on it.
+- **Catalog toolbar** — search with a 400 ms debounce, a category filter, five
+  sort choices and pagination, with `?q`, `?category`, `?sort` and `?page`
+  living in the URL. Refresh, Back, Forward and a shared link all work because
+  the URL is the only state there is.
+- **Skeletons, Retry and request cancellation** — an in-flight request is
+  aborted the moment its answer stops being wanted.
+- **Reviews** (`/products/:id`) — write one, watch the average move, and it
+  survives a reload. Local reviews sit above the API's.
+- **Related products** — four more from the same category, rendered through
+  the same `ProductCard` the catalogue uses.
+- **Promo codes** — `10X10` takes 10% off, in any case, and survives a reload.
+- **Orders** (`/orders`, `/orders/:id`) — history, an item table, a status
+  that moves Processing → Shipped → Delivered on its own, and Reorder.
+- **Profile** (`/profile`) — edit your details, see your order count, clear the
+  local data, switch the theme.
+- **Sign up** (`/signup`) — claims a username in this browser. The password is
+  kept only as a SHA-256 digest, never in plain text, and a claimed username is
+  then held to it. Any *other* username still signs in, because A1.6 requires
+  that and CORE depends on it.
+- **Dark mode** — seven design tokens in `@theme`, redefined once under
+  `[data-theme="dark"]`. Remembered in `shop_theme`.
+- **Formik + Yup** on the login form, and **route-level code splitting** so a
+  visitor who only browses never downloads Orders, Profile or Formik.
+
 
 ### Not implemented (FULL / BONUS)
 
 Deliberately out of scope for this stage, per the project rules that CORE is
 built first and FULL is not started without instruction:
 
-search and debounce, category filter, sorting, pagination, URL-as-state,
-reviews, related products, promo codes, the orders pages, the profile page,
-dark mode and the theme switch, password recovery (the other half of P1.1),
-Formik + Yup, `useReducer`, the `ApiClient`/`ApiError` classes, lazy routes and
-lazy images, Safari and Edge testing, and a full keyboard and screen-reader
+infinite scroll, a price-range filter, a wishlist, a grid/list toggle, search
+history, password recovery (the other half of P1.1), order cancellation,
+invoice PDFs, Safari and Edge testing, and a full keyboard and screen-reader
 audit.
 
 ---
@@ -66,11 +84,13 @@ audit.
 | UI | React 19, React Router 7 |
 | Language | TypeScript 6, `strict: true` |
 | Styling | Tailwind CSS v4 via `@tailwindcss/vite` |
-| Data | DummyJSON products API over `fetch` |
+| Data | DummyJSON products API over `fetch`, through a generic `ApiClient` |
+| Forms | Controlled React inputs; Formik + Yup on the login form |
 | Quality | ESLint 10 + typescript-eslint + eslint-plugin-react-hooks |
 
-No UI component library, no state management library and no HTTP client: React
-Context and `fetch` cover everything CORE needs.
+No UI component library, no state-management library and no HTTP client:
+Context, `useReducer` and `fetch` cover everything. Formik and Yup are the one
+addition, and the Annex names them.
 
 ---
 
@@ -78,19 +98,34 @@ Context and `fetch` cover everything CORE needs.
 
 ```
 src/
-  api/         products.api.ts       typed fetch calls to DummyJSON
-  types/       product, user, cart, checkout   domain models, declared once
-  context/     AuthContext, CartContext        shared login and cart state
+  api/         ApiClient (generic get<T>), ApiError, products.api.ts
+  types/       product, user, cart, checkout, order, api, theme
+  models/      Cart, Order, StorageService<T>, storage.ts (keys + instances)
+  context/     Auth, Cart (+ cart.reducer), Theme, Toast
+  hooks/       useDebounce, useNow
   components/
     layout/    Layout, Header, Footer, ScrollToTop
-    product/   ProductCard, ProductGrid, ProductGallery, ProductPrice, StockBadge
-    cart/      CartItemRow
-    ui/        Button, Container, FormField, PageHeader, QuantityStepper, StateMessage
+    catalog/   CatalogToolbar
+    product/   ProductCard, ProductGrid, ProductGallery, ProductPrice,
+               StockBadge, ProductCardSkeleton, StarRating, Review{List,Form}
+    cart/      CartItemRow, CartSummary, PromoForm
+    order/     OrderStatusBadge
+    ui/        Button, Container, FormField, PageHeader, Pagination,
+               QuantityStepper, StateMessage
     ErrorBoundary.tsx
-  pages/       Catalog, Product, Cart, Login, SignUp, Checkout, NotFound
-  routes/      AppRoutes, ProtectedRoute
-  utils/       format.ts (prices), validation.ts (form rules), password.ts (digests)
+  pages/       Catalog, Product, Cart, Login, SignUp, Checkout,
+               Orders, OrderDetail, Profile, NotFound
+  routes/      AppRoutes (lazy), ProtectedRoute
+  utils/       format (prices, dates), validation (form rules),
+               password (digests), url (catalogue paths)
 ```
+
+**Where the layers sit.** `types/` and `models/` import nothing from React.
+`models/` is the business logic — `Cart` answers every money question and
+`Order` owns the status rule — so both could be tested without a browser.
+`context/` holds the shared state and is the only place that writes to
+storage. `components/` are presentational and report events through callback
+props. Nothing imports upwards, and there are no cycles.
 
 **How data flows.** A page requests data in a `useEffect` through a typed
 function in `api/`, and holds the result plus a `loading | success | error`
@@ -174,7 +209,8 @@ Front-end graduation project.
 | --- | --- |
 | `PLAN.md` | The plan: scope, work breakdown, risks, schedule |
 | `REPORT.md` | What was delivered against it, with metrics |
-| `DEBUG-LOG.md` | Seven real bugs: symptom, tool, root cause, fix |
+| `DEBUG-LOG.md` | Ten real bugs: symptom, tool, root cause, fix |
 | `COMPATIBILITY.md` | The Chrome and Firefox matrix, 52 assertions |
 | `docs/lighthouse/` | Two full Lighthouse reports, before and after |
 | `docs/compat/` | Screenshots and the script behind the matrix |
+| `docs/progress/` | The three weekly progress notes |
