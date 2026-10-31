@@ -52,7 +52,7 @@ export default function CartPage() {
 
   function handleApplyPromo(code: string): boolean {
     const applied = applyPromo(code)
-    if (applied) showToast('Promo code applied ✓')
+    if (applied) showToast('Promo code applied')
     return applied
   }
 

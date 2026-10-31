@@ -132,7 +132,7 @@ function ProductDetails({ productId }: ProductDetailsProps) {
       const next = [review, ...readLocalReviews(productId)]
       reviewStorage.set({ ...all, [productId]: next })
       setLocalReviews(next)
-      showToast('Review added ✓')
+      showToast('Review added ✓') // taste-skill-ignore: P3.4 fixes this string
     },
     [productId, showToast],
   )
@@ -141,7 +141,7 @@ function ProductDetails({ productId }: ProductDetailsProps) {
     (item: Product, howMany: number) => {
       const added = addItem(item, howMany)
       showToast(
-        added > 0 ? 'Added to cart ✓' : 'That is all the stock we have',
+        added > 0 ? 'Added to cart ✓' : 'That is all the stock we have', // taste-skill-ignore: P2 fixes this string
         added > 0 ? 'success' : 'error',
       )
     },

@@ -53,7 +53,7 @@ export default function ProfilePage() {
     setErrors(nextErrors)
     if (hasErrors(nextErrors)) return
 
-    showToast('Profile updated ✓')
+    showToast('Profile updated')
   }
 
   /**
