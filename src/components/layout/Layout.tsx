@@ -22,7 +22,9 @@ export default function Layout() {
     <div className="flex min-h-screen flex-col bg-neutral-50">
       <ScrollToTop />
       <Header />
-      <main className="flex-1">
+      {/* A flex column, so a page with little content can grow to fill the
+          window instead of leaving a dead strip above the footer. */}
+      <main className="flex flex-1 flex-col">
         <ErrorBoundary key={pathname}>
           <Outlet />
         </ErrorBoundary>

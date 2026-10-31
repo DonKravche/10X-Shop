@@ -8,7 +8,9 @@ import Container from '../components/ui/Container'
  */
 export default function NotFoundPage() {
   return (
-    <Container className="py-20">
+    // Centred in the space the layout leaves, so a wrong URL does not land on
+    // a short block with a tall empty band under it.
+    <Container className="flex flex-1 flex-col justify-center py-20">
       <div className="max-w-xl">
         <h1 className="text-2xl font-bold tracking-tight text-neutral-950">
           Page not found

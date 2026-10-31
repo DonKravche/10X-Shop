@@ -33,9 +33,10 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <Container className="py-8">
+      <Container className="flex flex-1 flex-col py-8">
         <PageHeader title="Your cart" />
         <StateMessage
+          fill
           title="Your cart is empty."
           description={
             cameFromEmptyCheckout

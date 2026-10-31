@@ -70,7 +70,7 @@ export default function CheckoutPage() {
 
   if (placedOrder !== null) {
     return (
-      <Container className="py-12">
+      <Container className="flex flex-1 flex-col justify-center py-12">
         <div className="mx-auto max-w-xl rounded-lg border border-neutral-200 bg-white p-8">
           <h1 className="text-2xl font-bold tracking-tight text-neutral-950">
             Thank you! Your order has been placed.

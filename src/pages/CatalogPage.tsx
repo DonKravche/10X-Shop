@@ -56,7 +56,7 @@ export default function CatalogPage() {
   }, [])
 
   return (
-    <Container className="py-8">
+    <Container className="flex flex-1 flex-col py-8">
       <PageHeader
         title="Catalog"
         description={
@@ -66,10 +66,11 @@ export default function CatalogPage() {
         }
       />
 
-      {status === 'loading' ? <StateMessage title="Loading products..." /> : null}
+      {status === 'loading' ? <StateMessage fill title="Loading products..." /> : null}
 
       {status === 'error' ? (
         <StateMessage
+          fill
           tone="error"
           title="We could not load the products"
           description="The product service did not respond. Please check your connection and reload the page."
@@ -78,6 +79,7 @@ export default function CatalogPage() {
 
       {status === 'success' && products.length === 0 ? (
         <StateMessage
+          fill
           title="No products found."
           description="There is nothing in the catalogue right now."
         />

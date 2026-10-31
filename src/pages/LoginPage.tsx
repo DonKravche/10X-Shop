@@ -57,7 +57,9 @@ export default function LoginPage() {
   }
 
   return (
-    <Container className="py-12">
+    // Centred in the space the layout leaves, so the form sits in the middle
+    // of the screen rather than at the top of a tall empty band.
+    <Container className="flex flex-1 flex-col justify-center py-12">
       <div className="mx-auto w-full max-w-sm">
         <h1 className="text-2xl font-bold tracking-tight text-neutral-950">Log in</h1>
         <p className="mt-1 text-sm text-neutral-500">

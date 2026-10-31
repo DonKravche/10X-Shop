@@ -91,16 +91,17 @@ function ProductDetails({ productId }: ProductDetailsProps) {
 
   if (status === 'loading') {
     return (
-      <Container className="py-8">
-        <StateMessage title="Loading product..." />
+      <Container className="flex flex-1 flex-col py-8">
+        <StateMessage fill title="Loading product..." />
       </Container>
     )
   }
 
   if (status === 'error' || product === null) {
     return (
-      <Container className="py-8">
+      <Container className="flex flex-1 flex-col py-8">
         <StateMessage
+          fill
           tone="error"
           title="We could not load this product"
           description="The product service did not respond. Please check your connection and reload the page."

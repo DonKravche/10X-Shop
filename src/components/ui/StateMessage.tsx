@@ -7,6 +7,15 @@ interface StateMessageProps {
   /** Optional action, e.g. a link back to the catalogue. */
   children?: ReactNode
   tone?: 'neutral' | 'error'
+  /**
+   * Centre the panel in the space the page has left, used when this message
+   * is the whole body of a screen. Without it a short state sits at the top
+   * with a long empty band between it and the footer.
+   *
+   * The panel keeps its own height: a card that stretches to fill a screen
+   * only ends up holding a blank band of its own.
+   */
+  fill?: boolean
 }
 
 /**
@@ -24,8 +33,9 @@ export default function StateMessage({
   description,
   children,
   tone = 'neutral',
+  fill = false,
 }: StateMessageProps) {
-  return (
+  const panel = (
     <div
       role="status"
       className="rounded-lg border border-neutral-200 bg-white px-6 py-12 text-center"
@@ -43,4 +53,10 @@ export default function StateMessage({
       {children ? <div className="mt-6 flex justify-center">{children}</div> : null}
     </div>
   )
+
+  if (!fill) return panel
+
+  // A column, so the panel still spans the page's width and only its vertical
+  // position is centred.
+  return <div className="flex flex-1 flex-col justify-center">{panel}</div>
 }
