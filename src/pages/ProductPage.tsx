@@ -1,19 +1,35 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ProductGallery from '../components/product/ProductGallery'
+import ProductGrid from '../components/product/ProductGrid'
 import ProductPrice from '../components/product/ProductPrice'
+import ReviewForm from '../components/product/ReviewForm'
+import ReviewList from '../components/product/ReviewList'
+import StarRating from '../components/product/StarRating'
 import StockBadge from '../components/product/StockBadge'
 import Button from '../components/ui/Button'
 import Container from '../components/ui/Container'
 import QuantityStepper from '../components/ui/QuantityStepper'
 import StateMessage from '../components/ui/StateMessage'
-import { fetchProductById } from '../api/products.api'
+import { fetchProductById, fetchRelated } from '../api/products.api'
 import { isApiError } from '../api/ApiError'
+import { useAuth } from '../context/auth-context'
 import { useCart } from '../context/cart-context'
-import type { Product } from '../types/product'
+import { useToast } from '../context/toast-context'
+import { reviewStorage } from '../models/storage'
+import type { Product, Review } from '../types/product'
 import NotFoundPage from './NotFoundPage'
 
 type Status = 'loading' | 'success' | 'error' | 'not-found'
+type Tab = 'description' | 'reviews'
+
+/** Reviews written in this browser for one product, newest first. */
+function readLocalReviews(productId: number): Review[] {
+  const all = reviewStorage.get()
+  if (all === null) return []
+  const forProduct = all[productId]
+  return Array.isArray(forProduct) ? forProduct : []
+}
 
 /**
  * Annex A, P3. One product, loaded by the id in the URL.
@@ -23,7 +39,8 @@ type Status = 'loading' | 'success' | 'error' | 'not-found'
  * found page without touching the network (P3.2).
  *
  * Keying ProductDetails by the id remounts it when the route moves to another
- * product, which resets the chosen thumbnail and the quantity along with it.
+ * product, which resets the chosen thumbnail, the quantity and the open tab
+ * along with it.
  */
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>()
@@ -44,21 +61,15 @@ function ProductDetails({ productId }: ProductDetailsProps) {
   const [product, setProduct] = useState<Product | null>(null)
   const [status, setStatus] = useState<Status>('loading')
   const [quantity, setQuantity] = useState(1)
-  const [feedback, setFeedback] = useState('')
+  const [tab, setTab] = useState<Tab>('description')
+  const [related, setRelated] = useState<Product[]>([])
+  const [localReviews, setLocalReviews] = useState<Review[]>(() =>
+    readLocalReviews(productId),
+  )
 
   const { addItem } = useCart()
-
-  function handleAddToCart(item: Product) {
-    const added = addItem(item, quantity)
-    // P3.3 asks for simple inline feedback at CORE; the shared Toast system
-    // is FULL. Saying how many units went in is more useful than "done",
-    // because the cart caps the line at the remaining stock.
-    setFeedback(
-      added > 0
-        ? `Added ${added} to your cart.`
-        : 'Your cart already holds all the stock we have.',
-    )
-  }
+  const { user } = useAuth()
+  const { showToast } = useToast()
 
   useEffect(() => {
     const controller = new AbortController()
@@ -80,6 +91,62 @@ function ProductDetails({ productId }: ProductDetailsProps) {
     // another refetches. Without it the URL would change and the data would
     // not (P3.2).
   }, [productId])
+
+  // Related products wait for the product, because its category is the query
+  // (P3.5). Their own failure is silent: this block is an extra, and losing
+  // it must not take the page with it.
+  const category = product?.category
+  useEffect(() => {
+    if (category === undefined) return
+    const controller = new AbortController()
+    fetchRelated(category, productId, controller.signal)
+      .then(setRelated)
+      .catch(() => undefined)
+    return () => controller.abort()
+  }, [category, productId])
+
+  /**
+   * Local reviews first, newest at the top, then the ones the API returned
+   * (P3.4). Local ones are already stored newest-first, so no sort is needed.
+   */
+  const reviews = useMemo(
+    () => [...localReviews, ...(product?.reviews ?? [])],
+    [localReviews, product],
+  )
+
+  /**
+   * The average across both sources (P3.4).
+   *
+   * Computed rather than read from `product.rating`, because a review written
+   * here has to move the number - otherwise adding a one-star review would
+   * leave the headline rating untouched and the page would contradict itself.
+   */
+  const averageRating = useMemo(() => {
+    if (reviews.length === 0) return product?.rating ?? 0
+    return reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+  }, [reviews, product])
+
+  const handleAddReview = useCallback(
+    (review: Review) => {
+      const all = reviewStorage.get() ?? {}
+      const next = [review, ...readLocalReviews(productId)]
+      reviewStorage.set({ ...all, [productId]: next })
+      setLocalReviews(next)
+      showToast('Review added ✓')
+    },
+    [productId, showToast],
+  )
+
+  const handleAdd = useCallback(
+    (item: Product, howMany: number) => {
+      const added = addItem(item, howMany)
+      showToast(
+        added > 0 ? 'Added to cart ✓' : 'That is all the stock we have',
+        added > 0 ? 'success' : 'error',
+      )
+    },
+    [addItem, showToast],
+  )
 
   if (status === 'not-found') {
     return <NotFoundPage />
@@ -115,6 +182,15 @@ function ProductDetails({ productId }: ProductDetailsProps) {
 
   const isSoldOut = product.stock === 0
 
+  const tabClass = (value: Tab): string =>
+    [
+      'min-h-11 border-b-2 px-1 text-sm transition-colors',
+      'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950',
+      tab === value
+        ? 'border-neutral-950 font-medium text-neutral-950'
+        : 'border-transparent text-neutral-500 hover:text-neutral-950',
+    ].join(' ')
+
   return (
     <Container className="py-8">
       <Link
@@ -138,7 +214,13 @@ function ProductDetails({ productId }: ProductDetailsProps) {
 
           <p className="mt-2 text-sm text-neutral-500">
             {product.brand ? `${product.brand} · ` : ''}
-            {product.category}
+            {/* The category links back into the filtered catalogue (P3.1). */}
+            <Link
+              to={`/?category=${encodeURIComponent(product.category)}`}
+              className="rounded-sm underline underline-offset-2 hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            >
+              {product.category}
+            </Link>
           </p>
 
           <div className="mt-6">
@@ -149,17 +231,20 @@ function ProductDetails({ productId }: ProductDetailsProps) {
             />
           </div>
 
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <StarRating value={averageRating} />
             <span className="text-sm tabular-nums text-neutral-600">
-              &#9733; {product.rating.toFixed(1)}
+              {averageRating.toFixed(1)}
             </span>
+            <button
+              type="button"
+              onClick={() => setTab('reviews')}
+              className="rounded-sm text-sm text-neutral-600 underline underline-offset-2 transition-colors hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            >
+              {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
+            </button>
             <StockBadge stock={product.stock} />
           </div>
-
-          <h2 className="mt-8 text-base font-medium text-neutral-950">Description</h2>
-          <p className="mt-2 max-w-prose text-sm leading-relaxed text-neutral-700">
-            {product.description}
-          </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <QuantityStepper
@@ -170,7 +255,7 @@ function ProductDetails({ productId }: ProductDetailsProps) {
             />
             <Button
               disabled={isSoldOut}
-              onClick={() => handleAddToCart(product)}
+              onClick={() => handleAdd(product, quantity)}
               className="min-w-40"
             >
               {isSoldOut ? 'Out of stock' : 'Add to cart'}
@@ -182,20 +267,57 @@ function ProductDetails({ productId }: ProductDetailsProps) {
               This product is currently out of stock.
             </p>
           ) : null}
-
-          {feedback !== '' && !isSoldOut ? (
-            <p role="status" className="mt-4 text-sm text-neutral-700">
-              {feedback}{' '}
-              <Link
-                to="/cart"
-                className="rounded-sm font-medium text-neutral-950 underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
-              >
-                View cart
-              </Link>
-            </p>
-          ) : null}
         </div>
       </div>
+
+      <div className="mt-12">
+        <div role="tablist" className="flex gap-6 border-b border-neutral-200">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'description'}
+            onClick={() => setTab('description')}
+            className={tabClass('description')}
+          >
+            Description
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'reviews'}
+            onClick={() => setTab('reviews')}
+            className={tabClass('reviews')}
+          >
+            Reviews ({reviews.length})
+          </button>
+        </div>
+
+        {tab === 'description' ? (
+          <p className="max-w-prose py-6 text-sm leading-relaxed text-neutral-700">
+            {product.description}
+          </p>
+        ) : (
+          <div className="max-w-2xl">
+            <ReviewList reviews={reviews} />
+            <ReviewForm
+              // Signed in or not, a review needs a name against it (P3.4).
+              reviewerName={user.isLoggedIn ? user.username : 'Guest'}
+              onSubmit={handleAddReview}
+            />
+          </div>
+        )}
+      </div>
+
+      {related.length > 0 ? (
+        <section className="mt-16">
+          <h2 className="mb-6 text-lg font-bold tracking-tight text-neutral-950">
+            More in {product.category}
+          </h2>
+          {/* The same ProductCard the catalogue uses - P2.3 names this as the
+              evidence that the component really is reusable. */}
+          <ProductGrid products={related} onAdd={(item) => handleAdd(item, 1)} />
+        </section>
+      ) : null}
     </Container>
   )
 }

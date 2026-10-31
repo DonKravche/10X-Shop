@@ -168,7 +168,7 @@ export default function CatalogPage() {
   function handleAdd(product: Product) {
     const added = addItem(product, 1)
     showToast(
-      added > 0 ? 'Added to cart' : 'That is all the stock we have',
+      added > 0 ? 'Added to cart ✓' : 'That is all the stock we have',
       added > 0 ? 'success' : 'error',
     )
   }
