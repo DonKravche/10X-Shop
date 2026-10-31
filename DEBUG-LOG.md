@@ -318,6 +318,54 @@ that means nothing.
 
 ---
 
+## 9. "Price: low to high" produced visibly unsorted prices
+
+**Symptom.** `/?sort=price-asc` returned twelve products whose displayed
+prices went $0.71, $0.98, $0.84, $1.29 — the third one lower than the second.
+
+**Reproduction.** Open the catalogue, choose "Price: low to high", read the
+figures on the cards.
+
+**Tool.** `curl` against the endpoint, printing both prices side by side:
+
+```
+list 0.79   disc 0.71
+list 0.99   disc 0.98
+list 0.99   disc 0.84
+list 1.29   disc 1.29
+```
+
+**Root cause.** Not the API. DummyJSON honours `sortBy=price` exactly — the
+**list** prices are perfectly ascending. The cards show the **discounted**
+price, and those two orders are different: two products both listed at $0.99
+display as $0.98 and $0.84 because their discounts differ, and they arrive in
+list order.
+
+I had assumed "the sort is broken" and was about to write it up as the
+endpoint ignoring the parameter, which P2.6 anticipates. The `curl` output is
+what showed that the server was right and the display was the problem.
+
+**Fix.** Re-sort the page client-side by the figure actually on screen,
+`discountedPrice(price, discountPercentage)`, for the two price sorts only —
+rating and title are displayed exactly as they are sorted, so they need
+nothing. Commit [`(this change)`](https://github.com/DonKravche/10X-Shop).
+
+**Why this is a compromise, not a solution.** It orders the twelve products on
+the page by what the shopper can read, which makes the control behave as the
+label promises. It cannot order the other 182: the server already chose *which*
+twelve to send, using the other price, so page 2 can begin lower than page 1
+ended. Sorting the whole catalogue correctly would mean fetching all 194
+products, and O1 is explicit that they are never loaded at once. The right fix
+belongs on a server that can sort by the price it displays.
+
+**What I learned.** "The API is broken" is the most expensive assumption
+available, and it is the first one that comes to mind. Thirty seconds of
+`curl` moved the bug from their side to mine. Also: a derived value shown to a
+user has to be the value you sort by, or the sort is a lie however correct the
+request was.
+
+---
+
 ## Checking the error boundary
 
 Not a bug, but worth recording since the boundary is otherwise invisible.
