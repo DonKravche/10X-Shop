@@ -37,7 +37,7 @@ its reason.
 | Page | Requirement | Status |
 | --- | --- | --- |
 | P0 Global | Layout, Router, Header, 404, checkout guard, loading/error/empty | Done |
-| Landing (not in Annex A) | Contact-sheet hero, every category with a picture and a count | Added on instruction |
+| Landing (not in Annex A) | The shop as its own mail-order catalogue: cover, issue figures, two scrollable runs, departments | Added on instruction |
 | P1 Login | Controlled form, required validation, Context update, redirect | Done |
 | P1.1 Sign Up | FULL — local accounts, hashed password, duplicate names refused | Done on instruction |
 | P2 Catalog | `GET /products`, typed data, ProductCard/Grid, navigation, Add to cart | Done |

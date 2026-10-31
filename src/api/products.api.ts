@@ -62,12 +62,22 @@ interface StorefrontProbe {
   title: string
   category: string
   thumbnail: string
+  price: number
+  discountPercentage: number
+  rating: number
 }
+
+/** One product as the landing page shows it. */
+export type StorefrontProduct = StorefrontProbe
 
 export interface Storefront {
   categories: CategoryShowcase[]
-  /** A spread of the stock, for the landing page's contact sheet. */
-  sheet: { id: number; title: string; thumbnail: string }[]
+  /** A spread of the stock, for the cover's field of goods. */
+  sheet: StorefrontProduct[]
+  /** The deepest reductions in the catalogue, largest first. */
+  reduced: StorefrontProduct[]
+  /** The best-rated products in the catalogue. */
+  rated: StorefrontProduct[]
 }
 
 /**
@@ -86,7 +96,7 @@ export interface Storefront {
 export async function fetchStorefront(signal?: AbortSignal): Promise<Storefront> {
   const [response, categories] = await Promise.all([
     api.get<{ products: StorefrontProbe[] }>(
-      '/products?limit=0&select=id,title,category,thumbnail',
+      '/products?limit=0&select=id,title,category,thumbnail,price,discountPercentage,rating',
       signal,
     ),
     fetchCategories(signal),
@@ -113,14 +123,25 @@ export async function fetchStorefront(signal?: AbortSignal): Promise<Storefront>
     }))
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
 
-  const wanted = 48
+  const wanted = 60
   const stride = Math.max(Math.floor(response.products.length / wanted), 1)
   const sheet = response.products
     .filter((_, index) => index % stride === 0)
     .slice(0, wanted)
-    .map(({ id, title, thumbnail }) => ({ id, title, thumbnail }))
 
-  return { categories: showcase, sheet }
+  // Both runs are the catalogue sorted, not a list somebody chose: featured
+  // on a shop usually means paid placement, and there is nobody here to pay.
+  const byDiscount = [...response.products].sort(
+    (a, b) => b.discountPercentage - a.discountPercentage,
+  )
+  const byRating = [...response.products].sort((a, b) => b.rating - a.rating)
+
+  return {
+    categories: showcase,
+    sheet,
+    reduced: byDiscount.slice(0, 14),
+    rated: byRating.slice(0, 14),
+  }
 }
 
 /** Every category with a picture and a count (the catalogue's strip). */

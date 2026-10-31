@@ -16,7 +16,7 @@ server, no token and no payment. Nothing you type is sent anywhere.
 
 ### Implemented (CORE)
 
-- **Landing** (`/`) — a contact sheet of the real stock, every category with a picture and a count, and the way into the catalogue.
+- **Landing** (`/`) — the shop as a mail-order catalogue: a cover over a field of its own stock, the issue in real figures, two scrollable runs of goods (deepest reductions, best rated) and every department with a picture and a count.
 - **Catalog** (`/catalog`) — 12 products from `GET /products`, rendered as typed
   product cards with loading, error and empty states.
 - **Product details** (`/products/:id`) — image gallery, price, rating, stock
