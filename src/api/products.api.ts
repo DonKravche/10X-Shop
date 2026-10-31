@@ -1,57 +1,57 @@
 /**
- * DummyJSON product API (Annex A1.6).
+ * DummyJSON product endpoints (Annex A1.6).
  *
- * CORE loads data with plain `fetch` inside dedicated, typed functions. The
- * generic `ApiClient` class and `ApiError` are FULL and are not used here.
- *
- * Only the product endpoints are called. There is no auth endpoint and no
- * `POST /carts/add`: login and order placement are local simulations
- * (PRD rules 6 and 7).
- *
- * Requests are not aborted. P2.2 brackets AbortController as FULL, where it
- * exists to stop a stale search response overtaking a newer one; CORE has no
- * filters to race, so callers drop late responses with an `ignore` flag in
- * their effect cleanup instead.
+ * Each function names the shape it returns and hands the work to the shared
+ * ApiClient, so the base URL and the failure handling are not repeated here.
+ * Only product endpoints are called: login and order placement are local
+ * simulations (PRD rules 6 and 7).
  */
 
-import type { Product, ProductsResponse } from '../types/product'
+import type { Category, Product, ProductsResponse } from '../types/product'
+import type { CatalogParams } from '../types/api'
+import { buildProductsPath } from '../utils/url'
+import { ApiClient } from './ApiClient'
 
-const BASE_URL = 'https://dummyjson.com'
-
-/** Products shown per catalogue page (Annex A1.6). */
-export const PRODUCTS_PER_PAGE = 12
+const api = new ApiClient('https://dummyjson.com')
 
 /**
- * Reads a response as JSON, failing loudly with a readable message so the UI
- * can show a real error state instead of rendering `undefined`.
+ * One screen of the catalogue, whichever endpoint the parameters imply.
+ *
+ * `signal` comes from the caller's effect cleanup: when the shopper types
+ * another letter or moves to the next page, the request in flight is
+ * abandoned so its answer cannot arrive late and overwrite a newer one.
  */
-async function readJson<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`)
-  }
-  return (await response.json()) as T
+export function fetchCatalog(
+  params: CatalogParams,
+  signal?: AbortSignal,
+): Promise<ProductsResponse> {
+  return api.get<ProductsResponse>(buildProductsPath(params), signal)
 }
 
-/** `GET /products?limit=12&skip=0`. */
-export async function fetchProducts(): Promise<ProductsResponse> {
-  const response = await fetch(`${BASE_URL}/products?limit=${PRODUCTS_PER_PAGE}&skip=0`)
-  return readJson<ProductsResponse>(response)
+/** The category list for the filter (Annex A, P2.5). */
+export function fetchCategories(signal?: AbortSignal): Promise<Category[]> {
+  return api.get<Category[]>('/products/categories', signal)
+}
+
+/** One product. A 404 surfaces as an ApiError the caller can recognise. */
+export function fetchProductById(id: number, signal?: AbortSignal): Promise<Product> {
+  return api.get<Product>(`/products/${id}`, signal)
 }
 
 /**
- * `GET /products/:id`.
+ * Up to four other products from the same category (Annex A, P3.5).
  *
- * Returns `null` when the product does not exist (HTTP 404) so the caller can
- * show the Not found page, and throws for every other failure so the caller
- * can show an error state. Distinguishing the two is what keeps "this product
- * is gone" from looking like "the network is down".
+ * Five are requested because one of them is usually the product being viewed,
+ * which is then filtered out.
  */
-export async function fetchProductById(id: number): Promise<Product | null> {
-  const response = await fetch(`${BASE_URL}/products/${id}`)
-
-  if (response.status === 404) {
-    return null
-  }
-
-  return readJson<Product>(response)
+export async function fetchRelated(
+  category: string,
+  excludeId: number,
+  signal?: AbortSignal,
+): Promise<Product[]> {
+  const response = await api.get<ProductsResponse>(
+    `/products/category/${encodeURIComponent(category)}?limit=5`,
+    signal,
+  )
+  return response.products.filter((product) => product.id !== excludeId).slice(0, 4)
 }

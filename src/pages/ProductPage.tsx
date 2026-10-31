@@ -8,6 +8,7 @@ import Container from '../components/ui/Container'
 import QuantityStepper from '../components/ui/QuantityStepper'
 import StateMessage from '../components/ui/StateMessage'
 import { fetchProductById } from '../api/products.api'
+import { isApiError } from '../api/ApiError'
 import { useCart } from '../context/cart-context'
 import type { Product } from '../types/product'
 import NotFoundPage from './NotFoundPage'
@@ -60,26 +61,21 @@ function ProductDetails({ productId }: ProductDetailsProps) {
   }
 
   useEffect(() => {
-    let ignore = false
+    const controller = new AbortController()
 
-    fetchProductById(productId)
+    fetchProductById(productId, controller.signal)
       .then((result) => {
-        if (ignore) return
-        if (result === null) {
-          setStatus('not-found')
-          return
-        }
         setProduct(result)
         setStatus('success')
       })
-      .catch(() => {
-        if (ignore) return
-        setStatus('error')
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return
+        // A product that does not exist is not a failure to load one: 404
+        // gets the Not found page, everything else gets a retryable error.
+        setStatus(isApiError(error) && error.status === 404 ? 'not-found' : 'error')
       })
 
-    return () => {
-      ignore = true
-    }
+    return () => controller.abort()
     // `productId` is in the dependency list, so moving from one product to
     // another refetches. Without it the URL would change and the data would
     // not (P3.2).
