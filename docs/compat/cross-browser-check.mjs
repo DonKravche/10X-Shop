@@ -53,9 +53,23 @@ async function run(engine, name, launchOptions = {}) {
       }
     }
 
+    // 0. The landing page loads real stock from DummyJSON.
+    await step('landing shows the stock and the category sheet', async () => {
+      await page.goto(BASE, { waitUntil: 'networkidle' })
+      // Every category, each linking into the filtered catalogue. Counting
+      // them proves the one storefront request landed and was grouped.
+      await page.waitForFunction(
+        () => document.querySelectorAll('a[href^="/catalog?category="]').length >= 20,
+        { timeout: 20000 },
+      )
+      // The sheet is the shop's real product photography, not placeholders.
+      const frames = await page.locator('a[href^="/products/"] img').count()
+      if (frames < 24) throw new Error(`expected a sheet, got ${frames} frames`)
+    })
+
     // 1. Catalog loads from DummyJSON and renders cards.
     await step('catalog loads 12 products', async () => {
-      await page.goto(BASE, { waitUntil: 'networkidle' })
+      await page.goto(`${BASE}/catalog`, { waitUntil: 'networkidle' })
       await page.waitForSelector('article', { timeout: 20000 })
       const cards = await page.locator('article').count()
       if (cards !== 12) throw new Error(`expected 12 cards, got ${cards}`)
@@ -76,11 +90,13 @@ async function run(engine, name, launchOptions = {}) {
       // `.first()` because the related-products block carries its own Add to
       // cart buttons; the product's own is the first in document order.
       await page.getByRole('button', { name: 'Add to cart' }).first().click()
+      // The count lives in the link's accessible name, so this asserts what a
+      // screen reader is told rather than which span happens to be first.
       await page.waitForFunction(
-        () => {
-          const b = document.querySelector('a[href="/cart"] span')
-          return b && b.textContent.trim() === '1'
-        },
+        () =>
+          document
+            .querySelector('a[href="/cart"]')
+            ?.getAttribute('aria-label') === 'Cart, 1 items',
         { timeout: 10000 },
       )
     })
@@ -134,7 +150,7 @@ async function run(engine, name, launchOptions = {}) {
      * later steps would land on the catalogue instead.
      */
     const signOutAndReturnToGuard = async () => {
-      await page.locator('header button', { hasText: 'Log out' }).click()
+      await page.getByRole('button', { name: 'Log out' }).click()
       await page.goto(`${BASE}/checkout`, { waitUntil: 'networkidle' })
       await page.waitForURL(/\/login$/, { timeout: 20000 })
     }
@@ -185,8 +201,12 @@ async function run(engine, name, launchOptions = {}) {
       await page.waitForSelector('text=Thank you! Your order has been placed.', {
         timeout: 10000,
       })
-      const badge = await page.locator('a[href="/cart"] span').count()
-      if (badge !== 0) throw new Error('cart badge still visible after the order')
+      const cartName = await page
+        .locator('a[href="/cart"]')
+        .getAttribute('aria-label')
+      if (cartName !== 'Cart, empty') {
+        throw new Error(`cart not emptied by the order: ${cartName}`)
+      }
     })
 
     // 10. An unknown route and a malformed id both show Not found.
@@ -209,7 +229,7 @@ async function run(engine, name, launchOptions = {}) {
       await page.waitForSelector('h1', { timeout: 20000 })
     })
 
-    await page.goto(BASE, { waitUntil: 'networkidle' })
+    await page.goto(`${BASE}/catalog`, { waitUntil: 'networkidle' })
     await page.waitForSelector('article', { timeout: 20000 })
     await page.screenshot({
       path: `${SHOT_DIR}/${name}-${vp.name}-catalog.png`,
