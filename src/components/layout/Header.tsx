@@ -1,6 +1,7 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/auth-context'
 import { useCart } from '../../context/cart-context'
+import { useTheme } from '../../context/theme-context'
 import Container from '../ui/Container'
 
 /*
@@ -16,15 +17,16 @@ import Container from '../ui/Container'
 const linkClass = ({ isActive }: { isActive: boolean }): string =>
   [
     'inline-flex min-h-11 items-center rounded-md px-3 text-sm transition-colors',
-    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950',
+    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
     isActive
-      ? 'bg-neutral-100 font-medium text-neutral-950'
-      : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-950',
+      ? 'bg-ground font-medium text-ink'
+      : 'text-muted hover:bg-ground hover:text-ink',
   ].join(' ')
 
 export default function Header() {
   const { user, logout } = useAuth()
   const { itemCount } = useCart()
+  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
   /** Returns to the guest state and goes home. The cart is kept (P0.3). */
@@ -34,12 +36,12 @@ export default function Header() {
   }
 
   return (
-    <header className="border-b border-neutral-200 bg-white">
+    <header className="border-b border-line bg-surface">
       <Container>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-2 py-3">
           <Link
             to="/"
-            className="mr-auto inline-flex min-h-11 items-center rounded-md text-lg font-bold tracking-tight text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className="mr-auto inline-flex min-h-11 items-center rounded-md text-lg font-bold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             10X Shop
           </Link>
@@ -55,22 +57,37 @@ export default function Header() {
               Cart
               {/* The badge is hidden at zero rather than showing "0" (P0.3). */}
               {itemCount > 0 ? (
-                <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-neutral-950 px-1.5 py-0.5 text-xs font-medium tabular-nums text-white">
+                <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-ink px-1.5 py-0.5 text-xs font-medium tabular-nums text-surface">
                   {itemCount}
                 </span>
               ) : null}
             </NavLink>
           </nav>
 
+          {/* Dark / light, the same context the profile page switches (P0.4). */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-sm text-muted transition-colors hover:bg-ground hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+          >
+            <span aria-hidden="true">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+          </button>
+
           {user.isLoggedIn ? (
             <div className="flex items-center gap-2">
-              <span className="hidden text-sm text-neutral-500 sm:inline">
-                {user.username}
-              </span>
+              {/* Orders and Profile are FULL (P0.3) and only exist for a
+                  signed-in visitor, because both routes are guarded. */}
+              <NavLink to="/orders" className={linkClass}>
+                Orders
+              </NavLink>
+              <NavLink to="/profile" className={linkClass}>
+                Profile
+              </NavLink>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="inline-flex min-h-11 items-center rounded-md px-3 text-sm text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+                className="inline-flex min-h-11 items-center rounded-md px-3 text-sm text-muted transition-colors hover:bg-ground hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
               >
                 Log out
               </button>

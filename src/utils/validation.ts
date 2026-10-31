@@ -122,3 +122,41 @@ export function validateReview(values: ReviewFormValues): ReviewFormErrors {
 
   return errors
 }
+
+const NAME_MIN_LENGTH = 2
+const PHONE_PATTERN = /^\+?[\d\s]{9,15}$/
+
+/** The profile form (Annex A, P7.2). */
+export interface ProfileFormValues {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+}
+
+export type ProfileFormErrors = Partial<Record<keyof ProfileFormValues, string>>
+
+/** Profile: names and email required, phone optional but checked if given. */
+export function validateProfile(values: ProfileFormValues): ProfileFormErrors {
+  const errors: ProfileFormErrors = {}
+
+  if (values.firstName.trim().length < NAME_MIN_LENGTH) {
+    errors.firstName = `First name must be at least ${NAME_MIN_LENGTH} characters`
+  }
+
+  if (values.lastName.trim().length < NAME_MIN_LENGTH) {
+    errors.lastName = `Last name must be at least ${NAME_MIN_LENGTH} characters`
+  }
+
+  if (!EMAIL_PATTERN.test(values.email.trim())) {
+    errors.email = 'Please enter a valid email address'
+  }
+
+  // Optional: an empty phone is fine, a malformed one is not.
+  const phone = values.phone.trim()
+  if (phone !== '' && !PHONE_PATTERN.test(phone)) {
+    errors.phone = 'Please enter a valid phone number'
+  }
+
+  return errors
+}
