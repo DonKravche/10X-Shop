@@ -1,24 +1,37 @@
+import { lazy } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Layout from '../components/layout/Layout'
-import CartPage from '../pages/CartPage'
 import CatalogPage from '../pages/CatalogPage'
-import CheckoutPage from '../pages/CheckoutPage'
-import LoginPage from '../pages/LoginPage'
 import NotFoundPage from '../pages/NotFoundPage'
-import OrderDetailPage from '../pages/OrderDetailPage'
-import OrdersPage from '../pages/OrdersPage'
-import ProductPage from '../pages/ProductPage'
-import ProfilePage from '../pages/ProfilePage'
-import SignUpPage from '../pages/SignUpPage'
 import ProtectedRoute from './ProtectedRoute'
 
+/*
+ * Route-level code splitting (Annex A, O1).
+ *
+ * Each lazy page becomes its own chunk, fetched the first time its route is
+ * opened: the code for Orders is not downloaded by someone who only browses
+ * the catalogue. Network shows one request per route on first visit.
+ *
+ * Catalog and Not found are imported eagerly on purpose. Catalog is the entry
+ * point, so splitting it would only add a round trip before the first paint,
+ * and Not found is rendered *by* other pages for a bad id - it has to be
+ * there already rather than arriving after a second request.
+ */
+const ProductPage = lazy(() => import('../pages/ProductPage'))
+const CartPage = lazy(() => import('../pages/CartPage'))
+const LoginPage = lazy(() => import('../pages/LoginPage'))
+const SignUpPage = lazy(() => import('../pages/SignUpPage'))
+const CheckoutPage = lazy(() => import('../pages/CheckoutPage'))
+const OrdersPage = lazy(() => import('../pages/OrdersPage'))
+const OrderDetailPage = lazy(() => import('../pages/OrderDetailPage'))
+const ProfilePage = lazy(() => import('../pages/ProfilePage'))
+
 /**
- * The CORE route map (Annex A1.2).
+ * The route map (Annex A1.2).
  *
  * Every route is nested inside the single Layout route, so the header and the
- * footer are mounted once and survive navigation.
- *
- * /orders and /profile are FULL and guarded, like /checkout.
+ * footer are mounted once and survive navigation. /orders, /orders/:id,
+ * /profile and /checkout are guarded.
  */
 export default function AppRoutes() {
   return (
@@ -30,7 +43,7 @@ export default function AppRoutes() {
         <Route path="login" element={<LoginPage />} />
         {/* P1.1 lists Sign Up under FULL. */}
         <Route path="signup" element={<SignUpPage />} />
-        {/* P6, FULL: order history, guarded like checkout. */}
+        {/* P6 and P7, FULL: guarded like checkout. */}
         <Route
           path="orders"
           element={
@@ -48,18 +61,18 @@ export default function AppRoutes() {
           }
         />
         <Route
-          path="checkout"
-          element={
-            <ProtectedRoute>
-              <CheckoutPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="profile"
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="checkout"
+          element={
+            <ProtectedRoute>
+              <CheckoutPage />
             </ProtectedRoute>
           }
         />

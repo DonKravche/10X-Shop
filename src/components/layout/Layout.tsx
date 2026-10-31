@@ -1,5 +1,8 @@
+import { Suspense } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import ErrorBoundary from '../ErrorBoundary'
+import StateMessage from '../ui/StateMessage'
+import Container from '../ui/Container'
 import Footer from './Footer'
 import Header from './Header'
 import ScrollToTop from './ScrollToTop'
@@ -26,7 +29,18 @@ export default function Layout() {
           window instead of leaving a dead strip above the footer. */}
       <main className="flex flex-1 flex-col">
         <ErrorBoundary key={pathname}>
-          <Outlet />
+          {/* One Suspense for every lazy route (O1): a page's chunk is
+              fetched on its first visit, and this is what is on screen while
+              it arrives. */}
+          <Suspense
+            fallback={
+              <Container className="flex flex-1 flex-col py-8">
+                <StateMessage fill title="Loading..." />
+              </Container>
+            }
+          >
+            <Outlet />
+          </Suspense>
         </ErrorBoundary>
       </main>
       <Footer />
