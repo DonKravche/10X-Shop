@@ -20,7 +20,7 @@ export default function StarRating({ value, label }: StarRatingProps) {
         {Array.from({ length: 5 }, (_, index) => (
           <span
             key={index}
-            className={index < filled ? 'text-neutral-950' : 'text-neutral-300'}
+            className={index < filled ? 'text-ink' : 'text-strong'}
           >
             &#9733;
           </span>

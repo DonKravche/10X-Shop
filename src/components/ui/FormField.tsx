@@ -20,7 +20,7 @@ export default function FormField({ id, label, error, className = '', ...rest }:
 
   return (
     <div className={className}>
-      <label htmlFor={id} className="block text-sm font-medium text-neutral-950">
+      <label htmlFor={id} className="block text-sm font-medium text-ink">
         {label}
       </label>
       <input
@@ -28,15 +28,15 @@ export default function FormField({ id, label, error, className = '', ...rest }:
         aria-invalid={error !== undefined}
         aria-describedby={error !== undefined ? errorId : undefined}
         className={[
-          'mt-2 block min-h-11 w-full rounded-md border bg-white px-3 py-2 text-sm text-neutral-950',
-          'placeholder:text-neutral-400',
-          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950',
-          error !== undefined ? 'border-red-600' : 'border-neutral-300',
+          'mt-2 block min-h-11 w-full rounded-md border bg-surface px-3 py-2 text-sm text-ink',
+          'placeholder:text-subtle',
+          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
+          error !== undefined ? 'border-red-600' : 'border-strong',
         ].join(' ')}
         {...rest}
       />
       {error !== undefined ? (
-        <p id={errorId} className="mt-2 text-sm text-red-700">
+        <p id={errorId} className="mt-2 text-sm text-red-700 dark:text-red-400">
           {error}
         </p>
       ) : null}

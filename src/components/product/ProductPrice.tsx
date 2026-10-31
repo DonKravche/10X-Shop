@@ -27,7 +27,7 @@ export default function ProductPrice({
   return (
     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
       <span
-        className={`font-bold tabular-nums text-neutral-950 ${
+        className={`font-bold tabular-nums text-ink ${
           size === 'lg' ? 'text-3xl' : 'text-base'
         }`}
       >
@@ -37,13 +37,13 @@ export default function ProductPrice({
       {discounted ? (
         <>
           <span
-            className={`tabular-nums text-neutral-500 line-through ${
+            className={`tabular-nums text-subtle line-through ${
               size === 'lg' ? 'text-base' : 'text-sm'
             }`}
           >
             {formatPrice(price)}
           </span>
-          <span className="inline-flex items-center rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium tabular-nums text-green-900">
+          <span className="inline-flex items-center rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium tabular-nums text-green-900 dark:bg-green-950 dark:text-green-200">
             &minus;{Math.round(discountPercentage)}%
           </span>
         </>

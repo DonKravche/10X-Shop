@@ -73,7 +73,9 @@ async function run(engine, name, launchOptions = {}) {
 
     // 3. Add to cart updates the header badge.
     await step('add to cart updates the badge', async () => {
-      await page.getByRole('button', { name: 'Add to cart' }).click()
+      // `.first()` because the related-products block carries its own Add to
+      // cart buttons; the product's own is the first in document order.
+      await page.getByRole('button', { name: 'Add to cart' }).first().click()
       await page.waitForFunction(
         () => {
           const b = document.querySelector('a[href="/cart"] span')

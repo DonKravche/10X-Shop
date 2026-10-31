@@ -9,17 +9,60 @@
 @source not "../docs";
 
 /*
- * Plain CSS is allowed alongside Tailwind as a helper (Annex A1.7).
- * Custom @theme design tokens are a FULL requirement (A3-TW / TW5) and are
- * deliberately not used here: the CORE styling is stock Tailwind utilities.
+ * Dark mode is driven by an attribute, not by the operating system alone
+ * (Annex A, P0.3 and P0.4): the switch has to win over the OS preference, and
+ * the choice has to survive a reload through `shop_theme`. ThemeProvider sets
+ * `data-theme` on <html>; this is what makes `dark:` respond to it.
  */
-html {
-  font-family: Geist, ui-sans-serif, system-ui, -apple-system, sans-serif;
-  -webkit-text-size-adjust: 100%;
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/*
+ * The design tokens (Annex A, A3-TW / TW5).
+ *
+ * Named for the job each colour does rather than for the colour it is, so a
+ * component asks for "the surface a card sits on" instead of "white". That is
+ * what lets the whole interface invert below without touching a single
+ * className: only these seven values change.
+ */
+@theme {
+  --color-ground: #fafafa;
+  --color-surface: #ffffff;
+  --color-ink: #0a0a0a;
+  --color-muted: #525252;
+  --color-subtle: #737373;
+  --color-line: #e5e5e5;
+  --color-strong: #d4d4d4;
+
+  --font-display: Geist, ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
-/* Keyboard focus must stay visible everywhere (Annex A, O3 accessibility). */
-:focus-visible {
-  outline: 2px solid var(--color-neutral-950);
-  outline-offset: 2px;
+/*
+ * The same seven roles, in dark. Redefining the variables rather than writing
+ * a `dark:` variant on every element is the whole point of naming them by
+ * role: this block is the dark theme.
+ */
+[data-theme="dark"] {
+  --color-ground: #0a0a0a;
+  --color-surface: #171717;
+  --color-ink: #fafafa;
+  --color-muted: #a3a3a3;
+  --color-subtle: #8a8a8a;
+  --color-line: #262626;
+  --color-strong: #404040;
+
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-display);
+    -webkit-text-size-adjust: 100%;
+    background-color: var(--color-ground);
+  }
+
+  /* Keyboard focus must stay visible everywhere (Annex A, O3). */
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
 }

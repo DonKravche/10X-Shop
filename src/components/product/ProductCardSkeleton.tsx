@@ -11,15 +11,15 @@ export default function ProductCardSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="flex w-full animate-pulse flex-col rounded-lg border border-neutral-200 bg-white"
+      className="flex w-full animate-pulse flex-col rounded-lg border border-line bg-surface"
     >
-      <div className="aspect-square rounded-t-lg bg-neutral-100" />
-      <div className="flex flex-1 flex-col gap-3 border-t border-neutral-200 p-4">
-        <div className="h-4 w-4/5 rounded bg-neutral-100" />
-        <div className="h-3 w-2/5 rounded bg-neutral-100" />
+      <div className="aspect-square rounded-t-lg bg-ground" />
+      <div className="flex flex-1 flex-col gap-3 border-t border-line p-4">
+        <div className="h-4 w-4/5 rounded bg-ground" />
+        <div className="h-3 w-2/5 rounded bg-ground" />
         <div className="mt-auto flex flex-col gap-3 pt-2">
-          <div className="h-5 w-1/2 rounded bg-neutral-100" />
-          <div className="h-11 w-full rounded-md bg-neutral-100" />
+          <div className="h-5 w-1/2 rounded bg-ground" />
+          <div className="h-11 w-full rounded-md bg-ground" />
         </div>
       </div>
     </div>

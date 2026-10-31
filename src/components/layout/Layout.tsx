@@ -19,7 +19,7 @@ export default function Layout() {
   const { pathname } = useLocation()
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50">
+    <div className="flex min-h-screen flex-col bg-ground">
       <ScrollToTop />
       <Header />
       {/* A flex column, so a page with little content can grow to fill the

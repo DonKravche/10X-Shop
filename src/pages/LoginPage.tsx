@@ -74,11 +74,11 @@ export default function LoginPage() {
     // of the screen rather than at the top of a tall empty band.
     <Container className="flex flex-1 flex-col justify-center py-12">
       <div className="mx-auto w-full max-w-sm">
-        <h1 className="text-2xl font-bold tracking-tight text-neutral-950">Log in</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <h1 className="text-2xl font-bold tracking-tight text-ink">Log in</h1>
+        <p className="mt-1 text-sm text-subtle">
           Sign in to place your order.
         </p>
-        <p className="mt-3 text-sm text-neutral-600">
+        <p className="mt-3 text-sm text-muted">
           This is a demo shop, so any username works. If you created an
           account here, use the password you chose.
         </p>
@@ -112,14 +112,14 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-sm text-neutral-600">
+        <p className="mt-6 text-sm text-muted">
           No account yet?{' '}
           <Link
             to="/signup"
             // Carries the guarded destination through, so signing up from
             // here still returns the visitor to checkout.
             state={location.state}
-            className="rounded-sm font-medium text-neutral-950 underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className="rounded-sm font-medium text-ink underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Create one
           </Link>
@@ -127,7 +127,7 @@ export default function LoginPage() {
 
         <Link
           to="/"
-          className="mt-2 inline-flex min-h-11 items-center rounded-sm text-sm text-neutral-600 underline underline-offset-2 transition-colors hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+          className="mt-2 inline-flex min-h-11 items-center rounded-sm text-sm text-muted underline underline-offset-2 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           &larr; Back to catalog
         </Link>

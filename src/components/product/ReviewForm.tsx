@@ -43,16 +43,16 @@ export default function ReviewForm({ reviewerName, onSubmit }: ReviewFormProps) 
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="border-t border-neutral-200 pt-6">
-      <h3 className="text-base font-medium text-neutral-950">Write a review</h3>
+    <form onSubmit={handleSubmit} noValidate className="border-t border-line pt-6">
+      <h3 className="text-base font-medium text-ink">Write a review</h3>
 
       <fieldset className="mt-4">
-        <legend className="text-sm font-medium text-neutral-950">Rating</legend>
+        <legend className="text-sm font-medium text-ink">Rating</legend>
         <div className="mt-2 flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <label
               key={star}
-              className="cursor-pointer rounded-sm p-1 text-2xl leading-none transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-neutral-950"
+              className="cursor-pointer rounded-sm p-1 text-2xl leading-none transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink"
             >
               <input
                 type="radio"
@@ -67,7 +67,7 @@ export default function ReviewForm({ reviewerName, onSubmit }: ReviewFormProps) 
               />
               <span
                 aria-hidden="true"
-                className={star <= values.rating ? 'text-neutral-950' : 'text-neutral-300'}
+                className={star <= values.rating ? 'text-ink' : 'text-strong'}
               >
                 &#9733;
               </span>
@@ -76,12 +76,12 @@ export default function ReviewForm({ reviewerName, onSubmit }: ReviewFormProps) 
           ))}
         </div>
         {errors.rating !== undefined ? (
-          <p className="mt-2 text-sm text-red-700">{errors.rating}</p>
+          <p className="mt-2 text-sm text-red-700 dark:text-red-400">{errors.rating}</p>
         ) : null}
       </fieldset>
 
       <div className="mt-5">
-        <label htmlFor="review-comment" className="block text-sm font-medium text-neutral-950">
+        <label htmlFor="review-comment" className="block text-sm font-medium text-ink">
           Comment
         </label>
         <textarea
@@ -96,15 +96,15 @@ export default function ReviewForm({ reviewerName, onSubmit }: ReviewFormProps) 
           aria-invalid={errors.comment !== undefined}
           aria-describedby={errors.comment !== undefined ? 'review-comment-error' : undefined}
           className={[
-            'mt-2 block w-full rounded-md border bg-white px-3 py-2 text-sm text-neutral-950',
-            'placeholder:text-neutral-400',
-            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950',
-            errors.comment !== undefined ? 'border-red-600' : 'border-neutral-300',
+            'mt-2 block w-full rounded-md border bg-surface px-3 py-2 text-sm text-ink',
+            'placeholder:text-subtle',
+            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
+            errors.comment !== undefined ? 'border-red-600' : 'border-strong',
           ].join(' ')}
           placeholder="What did you think of it?"
         />
         {errors.comment !== undefined ? (
-          <p id="review-comment-error" className="mt-2 text-sm text-red-700">
+          <p id="review-comment-error" className="mt-2 text-sm text-red-700 dark:text-red-400">
             {errors.comment}
           </p>
         ) : null}

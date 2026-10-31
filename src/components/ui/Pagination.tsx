@@ -35,8 +35,8 @@ function pageItems(page: number, totalPages: number): (number | 'gap')[] {
 const BUTTON =
   'inline-flex h-11 min-w-11 items-center justify-center rounded-md px-3 text-sm ' +
   'tabular-nums transition-colors ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 ' +
-  'disabled:cursor-not-allowed disabled:text-neutral-300'
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ' +
+  'disabled:cursor-not-allowed disabled:text-subtle'
 
 export default function Pagination({ page, totalPages, onChange }: PaginationProps) {
   // One page is not a choice, so there is nothing to show.
@@ -50,7 +50,7 @@ export default function Pagination({ page, totalPages, onChange }: PaginationPro
         <li>
           <button
             type="button"
-            className={`${BUTTON} text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950 disabled:hover:bg-transparent`}
+            className={`${BUTTON} text-muted hover:bg-ground hover:text-ink disabled:hover:bg-transparent`}
             onClick={() => onChange(page - 1)}
             disabled={page <= 1}
             aria-label="Previous page"
@@ -63,7 +63,7 @@ export default function Pagination({ page, totalPages, onChange }: PaginationPro
           item === 'gap' ? (
             // The key can use the index here: the gaps have no identity of
             // their own and never reorder relative to the numbers around them.
-            <li key={`gap-${index}`} aria-hidden="true" className="px-1 text-neutral-400">
+            <li key={`gap-${index}`} aria-hidden="true" className="px-1 text-subtle">
               &hellip;
             </li>
           ) : (
@@ -72,8 +72,8 @@ export default function Pagination({ page, totalPages, onChange }: PaginationPro
                 type="button"
                 className={
                   item === page
-                    ? `${BUTTON} bg-neutral-950 font-medium text-white`
-                    : `${BUTTON} text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950`
+                    ? `${BUTTON} bg-ink font-medium text-surface`
+                    : `${BUTTON} text-muted hover:bg-ground hover:text-ink`
                 }
                 onClick={() => onChange(item)}
                 aria-label={`Page ${item}`}
@@ -88,7 +88,7 @@ export default function Pagination({ page, totalPages, onChange }: PaginationPro
         <li>
           <button
             type="button"
-            className={`${BUTTON} text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950 disabled:hover:bg-transparent`}
+            className={`${BUTTON} text-muted hover:bg-ground hover:text-ink disabled:hover:bg-transparent`}
             onClick={() => onChange(page + 1)}
             disabled={page >= totalPages}
             aria-label="Next page"

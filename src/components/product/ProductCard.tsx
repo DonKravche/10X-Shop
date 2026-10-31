@@ -28,8 +28,8 @@ export default function ProductCard({ product, onAdd }: ProductCardProps) {
   const isSoldOut = product.stock === 0
 
   return (
-    <article className="relative flex w-full flex-col rounded-lg border border-neutral-200 bg-white transition-colors hover:border-neutral-400 focus-within:border-neutral-400">
-      <div className="aspect-square overflow-hidden rounded-t-lg bg-neutral-50 p-4">
+    <article className="relative flex w-full flex-col rounded-lg border border-line bg-surface transition-colors hover:border-ink focus-within:border-ink">
+      <div className="aspect-square overflow-hidden rounded-t-lg bg-ground p-4">
         <img
           src={product.thumbnail}
           alt={product.title}
@@ -40,20 +40,20 @@ export default function ProductCard({ product, onAdd }: ProductCardProps) {
         />
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 border-t border-neutral-200 p-4">
+      <div className="flex flex-1 flex-col gap-2 border-t border-line p-4">
         {/* h2, not h3: the page's only h1 is the "Catalog" title, and a jump
             from h1 to h3 breaks the heading order a screen reader navigates
             by. The size comes from the class, not from the level. */}
-        <h2 className="text-sm font-medium text-neutral-950">
+        <h2 className="text-sm font-medium text-ink">
           <Link
             to={`/products/${product.id}`}
-            className="rounded-sm after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className="rounded-sm after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             {product.title}
           </Link>
         </h2>
 
-        <p className="text-xs text-neutral-500">
+        <p className="text-xs text-subtle">
           {product.category}
           {product.brand ? ` · ${product.brand}` : ''}
         </p>
@@ -64,7 +64,7 @@ export default function ProductCard({ product, onAdd }: ProductCardProps) {
             discountPercentage={product.discountPercentage}
           />
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs tabular-nums text-neutral-500">
+            <span className="text-xs tabular-nums text-subtle">
               &#9733; {product.rating.toFixed(1)}
             </span>
             <StockBadge stock={product.stock} />

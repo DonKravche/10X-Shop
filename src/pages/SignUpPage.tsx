@@ -81,10 +81,10 @@ export default function SignUpPage() {
   return (
     <Container className="flex flex-1 flex-col justify-center py-12">
       <div className="mx-auto w-full max-w-sm">
-        <h1 className="text-2xl font-bold tracking-tight text-neutral-950">
+        <h1 className="text-2xl font-bold tracking-tight text-ink">
           Create an account
         </h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-subtle">
           This is a demo shop. Your account is kept in this browser only — no
           server sees it.
         </p>
@@ -130,12 +130,12 @@ export default function SignUpPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-sm text-neutral-600">
+        <p className="mt-6 text-sm text-muted">
           Already have an account?{' '}
           <Link
             to="/login"
             state={location.state}
-            className="rounded-sm font-medium text-neutral-950 underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className="rounded-sm font-medium text-ink underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Log in
           </Link>
@@ -143,7 +143,7 @@ export default function SignUpPage() {
 
         <Link
           to="/"
-          className="mt-2 inline-flex min-h-11 items-center rounded-sm text-sm text-neutral-600 underline underline-offset-2 transition-colors hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+          className="mt-2 inline-flex min-h-11 items-center rounded-sm text-sm text-muted underline underline-offset-2 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           &larr; Back to catalog
         </Link>

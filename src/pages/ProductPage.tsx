@@ -171,7 +171,7 @@ function ProductDetails({ productId }: ProductDetailsProps) {
         >
           <Link
             to="/"
-            className="inline-flex min-h-11 items-center rounded-md border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-950 transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className="inline-flex min-h-11 items-center rounded-md border border-strong bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-ground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Back to catalog
           </Link>
@@ -185,17 +185,17 @@ function ProductDetails({ productId }: ProductDetailsProps) {
   const tabClass = (value: Tab): string =>
     [
       'min-h-11 border-b-2 px-1 text-sm transition-colors',
-      'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950',
+      'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
       tab === value
-        ? 'border-neutral-950 font-medium text-neutral-950'
-        : 'border-transparent text-neutral-500 hover:text-neutral-950',
+        ? 'border-ink font-medium text-ink'
+        : 'border-transparent text-subtle hover:text-ink',
     ].join(' ')
 
   return (
     <Container className="py-8">
       <Link
         to="/"
-        className="mb-4 inline-flex min-h-11 items-center rounded-sm text-sm text-neutral-600 underline underline-offset-2 transition-colors hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+        className="mb-4 inline-flex min-h-11 items-center rounded-sm text-sm text-muted underline underline-offset-2 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
       >
         &larr; Back to catalog
       </Link>
@@ -208,16 +208,16 @@ function ProductDetails({ productId }: ProductDetailsProps) {
         />
 
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-950 sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
             {product.title}
           </h1>
 
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-subtle">
             {product.brand ? `${product.brand} · ` : ''}
             {/* The category links back into the filtered catalogue (P3.1). */}
             <Link
               to={`/?category=${encodeURIComponent(product.category)}`}
-              className="rounded-sm underline underline-offset-2 hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+              className="rounded-sm underline underline-offset-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               {product.category}
             </Link>
@@ -233,13 +233,13 @@ function ProductDetails({ productId }: ProductDetailsProps) {
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <StarRating value={averageRating} />
-            <span className="text-sm tabular-nums text-neutral-600">
+            <span className="text-sm tabular-nums text-muted">
               {averageRating.toFixed(1)}
             </span>
             <button
               type="button"
               onClick={() => setTab('reviews')}
-              className="rounded-sm text-sm text-neutral-600 underline underline-offset-2 transition-colors hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+              className="rounded-sm text-sm text-muted underline underline-offset-2 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
             </button>
@@ -263,7 +263,7 @@ function ProductDetails({ productId }: ProductDetailsProps) {
           </div>
 
           {isSoldOut ? (
-            <p className="mt-4 text-sm text-neutral-500">
+            <p className="mt-4 text-sm text-subtle">
               This product is currently out of stock.
             </p>
           ) : null}
@@ -271,7 +271,7 @@ function ProductDetails({ productId }: ProductDetailsProps) {
       </div>
 
       <div className="mt-12">
-        <div role="tablist" className="flex gap-6 border-b border-neutral-200">
+        <div role="tablist" className="flex gap-6 border-b border-line">
           <button
             type="button"
             role="tab"
@@ -293,7 +293,7 @@ function ProductDetails({ productId }: ProductDetailsProps) {
         </div>
 
         {tab === 'description' ? (
-          <p className="max-w-prose py-6 text-sm leading-relaxed text-neutral-700">
+          <p className="max-w-prose py-6 text-sm leading-relaxed text-muted">
             {product.description}
           </p>
         ) : (
@@ -310,7 +310,7 @@ function ProductDetails({ productId }: ProductDetailsProps) {
 
       {related.length > 0 ? (
         <section className="mt-16">
-          <h2 className="mb-6 text-lg font-bold tracking-tight text-neutral-950">
+          <h2 className="mb-6 text-lg font-bold tracking-tight text-ink">
             More in {product.category}
           </h2>
           {/* The same ProductCard the catalogue uses - P2.3 names this as the

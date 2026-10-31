@@ -26,27 +26,27 @@ export default function CartItemRow({
   const lineTotal = unitPrice * item.quantity
 
   return (
-    <li className="flex flex-wrap items-start gap-4 border-b border-neutral-200 py-5 last:border-b-0">
+    <li className="flex flex-wrap items-start gap-4 border-b border-line py-5 last:border-b-0">
       <img
         src={item.thumbnail}
         alt={item.title}
         width={80}
         height={80}
         loading="lazy"
-        className="h-20 w-20 shrink-0 rounded-md border border-neutral-200 bg-white object-contain p-1"
+        className="h-20 w-20 shrink-0 rounded-md border border-line bg-surface object-contain p-1"
       />
 
       <div className="min-w-48 flex-1">
         {/* h2 for the same reason as ProductCard: the page h1 is "Your cart". */}
-        <h2 className="text-sm font-medium text-neutral-950">
+        <h2 className="text-sm font-medium text-ink">
           <Link
             to={`/products/${item.productId}`}
-            className="rounded-sm underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className="rounded-sm underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             {item.title}
           </Link>
         </h2>
-        <p className="mt-1 text-sm tabular-nums text-neutral-500">
+        <p className="mt-1 text-sm tabular-nums text-subtle">
           {formatPrice(unitPrice)} each
         </p>
 
@@ -60,14 +60,14 @@ export default function CartItemRow({
           <button
             type="button"
             onClick={() => onRemove(item.productId)}
-            className="min-h-11 rounded-md px-2 text-sm text-neutral-600 underline underline-offset-2 transition-colors hover:text-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className="min-h-11 rounded-md px-2 text-sm text-muted underline underline-offset-2 transition-colors hover:text-red-700 dark:text-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Remove
           </button>
         </div>
       </div>
 
-      <p className="ml-auto text-sm font-bold tabular-nums text-neutral-950">
+      <p className="ml-auto text-sm font-bold tabular-nums text-ink">
         {formatPrice(lineTotal)}
       </p>
     </li>

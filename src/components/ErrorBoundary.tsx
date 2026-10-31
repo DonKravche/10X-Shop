@@ -47,16 +47,16 @@ export default class ErrorBoundary extends Component<
       return (
         <div className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="max-w-xl">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-950">
+            <h1 className="text-2xl font-bold tracking-tight text-ink">
               Something went wrong.
             </h1>
-            <p className="mt-2 text-sm text-neutral-600">
+            <p className="mt-2 text-sm text-muted">
               This page could not be displayed. Reloading usually fixes it.
             </p>
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="mt-6 inline-flex min-h-11 items-center rounded-md bg-neutral-950 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+              className="mt-6 inline-flex min-h-11 items-center rounded-md bg-ink px-4 text-sm font-medium text-surface transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               Reload
             </button>

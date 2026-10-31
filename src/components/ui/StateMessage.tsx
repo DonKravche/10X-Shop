@@ -38,17 +38,17 @@ export default function StateMessage({
   const panel = (
     <div
       role="status"
-      className="rounded-lg border border-neutral-200 bg-white px-6 py-12 text-center"
+      className="rounded-lg border border-line bg-surface px-6 py-12 text-center"
     >
       <p
         className={`text-sm font-medium ${
-          tone === 'error' ? 'text-red-700' : 'text-neutral-950'
+          tone === 'error' ? 'text-red-700 dark:text-red-400' : 'text-ink'
         }`}
       >
         {title}
       </p>
       {description ? (
-        <p className="mx-auto mt-1 max-w-md text-sm text-neutral-500">{description}</p>
+        <p className="mx-auto mt-1 max-w-md text-sm text-subtle">{description}</p>
       ) : null}
       {children ? <div className="mt-6 flex justify-center">{children}</div> : null}
     </div>

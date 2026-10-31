@@ -25,13 +25,13 @@ export default function QuantityStepper({
   const clamp = (next: number): number => Math.min(Math.max(next, min), max)
 
   const buttonClass =
-    'inline-flex h-11 w-11 shrink-0 items-center justify-center text-lg text-neutral-950 ' +
-    'transition-colors hover:bg-neutral-100 ' +
-    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 ' +
-    'disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:bg-transparent'
+    'inline-flex h-11 w-11 shrink-0 items-center justify-center text-lg text-ink ' +
+    'transition-colors hover:bg-ground ' +
+    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ' +
+    'disabled:cursor-not-allowed disabled:text-subtle disabled:hover:bg-transparent'
 
   return (
-    <div className="inline-flex items-center rounded-md border border-neutral-300 bg-white">
+    <div className="inline-flex items-center rounded-md border border-strong bg-surface">
       <button
         type="button"
         className={buttonClass}
@@ -44,7 +44,7 @@ export default function QuantityStepper({
 
       <output
         aria-label={`Quantity of ${label}`}
-        className="w-10 text-center text-sm font-medium tabular-nums text-neutral-950"
+        className="w-10 text-center text-sm font-medium tabular-nums text-ink"
       >
         {value}
       </output>

@@ -17,15 +17,15 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const BASE =
   'inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2 ' +
   'text-sm font-medium transition-colors ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ' +
   'disabled:cursor-not-allowed disabled:opacity-40'
 
 const VARIANTS: Record<ButtonVariant, string> = {
   // The single primary action: near-black, never a brand colour.
-  primary: 'bg-neutral-950 text-white hover:bg-neutral-800 disabled:hover:bg-neutral-950',
+  primary: 'bg-ink text-surface hover:opacity-90 disabled:hover:bg-ink',
   secondary:
-    'border border-neutral-300 bg-white text-neutral-950 hover:bg-neutral-100 ' +
-    'disabled:hover:bg-white',
+    'border border-strong bg-surface text-ink hover:bg-ground ' +
+    'disabled:hover:bg-surface',
 }
 
 export default function Button({

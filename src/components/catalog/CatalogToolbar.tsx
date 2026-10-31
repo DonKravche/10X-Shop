@@ -23,9 +23,9 @@ const SORT_CHOICES: { value: SortOption; label: string }[] = [
 ]
 
 const CONTROL =
-  'min-h-11 w-full rounded-md border border-neutral-300 bg-white px-3 text-sm ' +
-  'text-neutral-950 transition-colors hover:border-neutral-400 ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950'
+  'min-h-11 w-full rounded-md border border-strong bg-surface px-3 text-sm ' +
+  'text-ink transition-colors hover:border-ink ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink'
 
 /**
  * Search, category and sort (Annex A, P2.4-P2.6).
@@ -60,7 +60,7 @@ export default function CatalogToolbar({
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="Search products"
-          className={`${CONTROL} placeholder:text-neutral-400`}
+          className={`${CONTROL} placeholder:text-subtle`}
         />
       </div>
 

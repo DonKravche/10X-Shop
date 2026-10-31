@@ -14,15 +14,15 @@ export default function NotFoundPage() {
       {/* Centred like the login form, so the block has equal margins instead
           of sitting hard left with the rest of the screen empty. */}
       <div className="mx-auto w-full max-w-xl">
-        <h1 className="text-2xl font-bold tracking-tight text-neutral-950">
+        <h1 className="text-2xl font-bold tracking-tight text-ink">
           Page not found
         </h1>
-        <p className="mt-2 text-sm text-neutral-600">
+        <p className="mt-2 text-sm text-muted">
           The page you are looking for does not exist.
         </p>
         <Link
           to="/"
-          className="mt-6 inline-flex min-h-11 items-center rounded-md bg-neutral-950 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+          className="mt-6 inline-flex min-h-11 items-center rounded-md bg-ink px-4 text-sm font-medium text-surface transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           Go to catalog
         </Link>

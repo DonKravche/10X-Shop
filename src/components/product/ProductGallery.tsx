@@ -24,7 +24,7 @@ export default function ProductGallery({ images, thumbnail, title }: ProductGall
 
   return (
     <div>
-      <div className="aspect-square overflow-hidden rounded-lg border border-neutral-200 bg-white p-6">
+      <div className="aspect-square overflow-hidden rounded-lg border border-line bg-surface p-6">
         <img
           src={activeImage}
           alt={title}
@@ -45,11 +45,11 @@ export default function ProductGallery({ images, thumbnail, title }: ProductGall
                   onClick={() => setActiveImage(image)}
                   aria-pressed={isActive}
                   className={[
-                    'h-20 w-20 overflow-hidden rounded-md border bg-white p-1 transition-colors',
-                    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950',
+                    'h-20 w-20 overflow-hidden rounded-md border bg-surface p-1 transition-colors',
+                    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
                     isActive
-                      ? 'border-neutral-950'
-                      : 'border-neutral-200 hover:border-neutral-400',
+                      ? 'border-ink'
+                      : 'border-line hover:border-ink',
                   ].join(' ')}
                 >
                   <img
