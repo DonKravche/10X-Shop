@@ -37,14 +37,15 @@ export default function CartItemRow({
       />
 
       <div className="min-w-48 flex-1">
-        <h3 className="text-sm font-medium text-neutral-950">
+        {/* h2 for the same reason as ProductCard: the page h1 is "Your cart". */}
+        <h2 className="text-sm font-medium text-neutral-950">
           <Link
             to={`/products/${item.productId}`}
             className="rounded-sm underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
           >
             {item.title}
           </Link>
-        </h3>
+        </h2>
         <p className="mt-1 text-sm tabular-nums text-neutral-500">
           {formatPrice(unitPrice)} each
         </p>

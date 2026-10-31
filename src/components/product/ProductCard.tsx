@@ -41,14 +41,17 @@ export default function ProductCard({ product, onAdd }: ProductCardProps) {
       </div>
 
       <div className="flex flex-1 flex-col gap-2 border-t border-neutral-200 p-4">
-        <h3 className="text-sm font-medium text-neutral-950">
+        {/* h2, not h3: the page's only h1 is the "Catalog" title, and a jump
+            from h1 to h3 breaks the heading order a screen reader navigates
+            by. The size comes from the class, not from the level. */}
+        <h2 className="text-sm font-medium text-neutral-950">
           <Link
             to={`/products/${product.id}`}
             className="rounded-sm after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
           >
             {product.title}
           </Link>
-        </h3>
+        </h2>
 
         <p className="text-xs text-neutral-500">
           {product.category}
