@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { CartItem, CartState } from '../types/cart'
 import type { Product } from '../types/product'
@@ -58,6 +58,23 @@ export default function CartProvider({ children }: CartProviderProps) {
   // Lazy initialiser: localStorage is read once on mount, not on every render.
   const [items, setItems] = useState<CartItem[]>(readStoredCart)
 
+  /**
+   * The latest cart, readable synchronously.
+   *
+   * `setItems` only schedules a render, so inside one event handler the
+   * `items` variable still holds the array from the last render. `addItem`
+   * has to answer "how many units actually went in" before that render
+   * happens, and two clicks in the same tick would otherwise both measure
+   * against the same stale array.
+   */
+  const itemsRef = useRef(items)
+
+  /** The one place the cart changes: the ref and the state move together. */
+  const commit = useCallback((next: CartItem[]) => {
+    itemsRef.current = next
+    setItems(next)
+  }, [])
+
   // Persist on every change, so a reload keeps the cart (A1.5).
   useEffect(() => {
     try {
@@ -69,26 +86,28 @@ export default function CartProvider({ children }: CartProviderProps) {
     }
   }, [items])
 
-  const addItem = useCallback((product: Product, quantity = 1): number => {
-    let added = 0
-
-    setItems((current) => {
+  const addItem = useCallback(
+    (product: Product, quantity = 1): number => {
+      const current = itemsRef.current
       const existing = current.find((item) => item.productId === product.id)
       const alreadyInCart = existing?.quantity ?? 0
       // Never let the cart exceed what the shop has (P4.2, P3.3).
       const room = product.stock - alreadyInCart
-      added = Math.max(Math.min(quantity, room), 0)
+      const added = Math.max(Math.min(quantity, room), 0)
 
-      if (added === 0) return current
+      if (added === 0) return 0
 
       if (existing) {
         // map() returns a new array and a new object for the changed line;
         // the other lines keep their identity.
-        return current.map((item) =>
-          item.productId === product.id
-            ? { ...item, quantity: item.quantity + added }
-            : item,
+        commit(
+          current.map((item) =>
+            item.productId === product.id
+              ? { ...item, quantity: item.quantity + added }
+              : item,
+          ),
         )
+        return added
       }
 
       const line: CartItem = {
@@ -100,29 +119,35 @@ export default function CartProvider({ children }: CartProviderProps) {
         stock: product.stock,
         quantity: added,
       }
-      return [...current, line]
-    })
+      commit([...current, line])
+      return added
+    },
+    [commit],
+  )
 
-    return added
-  }, [])
+  const removeItem = useCallback(
+    (productId: number) => {
+      commit(itemsRef.current.filter((item) => item.productId !== productId))
+    },
+    [commit],
+  )
 
-  const removeItem = useCallback((productId: number) => {
-    setItems((current) => current.filter((item) => item.productId !== productId))
-  }, [])
-
-  const setQuantity = useCallback((productId: number, quantity: number) => {
-    setItems((current) =>
-      current.map((item) =>
-        item.productId === productId
-          ? { ...item, quantity: Math.min(Math.max(quantity, 1), item.stock) }
-          : item,
-      ),
-    )
-  }, [])
+  const setQuantity = useCallback(
+    (productId: number, quantity: number) => {
+      commit(
+        itemsRef.current.map((item) =>
+          item.productId === productId
+            ? { ...item, quantity: Math.min(Math.max(quantity, 1), item.stock) }
+            : item,
+        ),
+      )
+    },
+    [commit],
+  )
 
   const clear = useCallback(() => {
-    setItems([])
-  }, [])
+    commit([])
+  }, [commit])
 
   const itemCount = useMemo(
     () => items.reduce((total, item) => total + item.quantity, 0),

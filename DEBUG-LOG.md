@@ -205,6 +205,61 @@ the earlier passes had been real — they had, but I had no right to assume so.
 
 ---
 
+## 7. "Add to cart" lied about what it had added
+
+**Symptom.** Clicking "Add to cart" twice in quick succession on
+`/products/1` put two units in the cart — the header badge went to `2` — while
+the inline message under the button read "Your cart already holds all the
+stock we have."
+
+**Reproduction.** In the browser console on the product page:
+
+```js
+const btn = [...document.querySelectorAll('button')]
+  .find(b => b.textContent.trim() === 'Add to cart')
+btn.click(); btn.click()
+```
+
+Badge: `2`. Message: the cart is full. Clicking slowly, one click at a time,
+never showed it — which is why I had not caught this by hand.
+
+**Tool.** Playwright against the production build, reading the badge and the
+`role="status"` message in the same snapshot so the two could be compared.
+
+**Root cause.** `addItem` returned how many units it had added, but computed
+that number *inside* the `setItems(current => ...)` updater:
+
+```ts
+let added = 0
+setItems((current) => { added = ...; return next })
+return added          // read before the updater had necessarily run
+```
+
+A state updater does not run when you call `setItems`; it runs during the next
+render. The code only ever worked because of a React optimisation: when a
+component has no update already pending, React evaluates the updater eagerly
+to see whether it can skip the re-render. The first click gets that fast path.
+The second click, fired while the first update is still pending, does not — so
+`added` was still `0` and the component reported the cart as full.
+
+**Fix.** Stop reading a value out of an updater. `CartProvider` now keeps a
+`useRef` holding the latest items and a single `commit()` that writes the ref
+and the state together; every cart operation reads `itemsRef.current`, which is
+correct within one event, and returns its result directly. The updates stay
+immutable — `map`, `filter` and spread still build a new array every time.
+
+**Verification.** Three rapid clicks: badge `3`, message "Added 1 to your
+cart." each time. Three hundred clicks on a product with 99 in stock: the line
+stops at exactly `99` and only then says the cart holds all the stock.
+
+**What I learned.** `setState` schedules; it does not execute. Anything a
+handler needs to know *now* has to be computed before the call, not harvested
+out of the updater afterwards. The bug was invisible to manual clicking because
+the React fast path hides it whenever the queue happens to be empty — a feature
+that worked right up until a user was quick.
+
+---
+
 ## Checking the error boundary
 
 Not a bug, but worth recording since the boundary is otherwise invisible.
