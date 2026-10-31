@@ -11,7 +11,9 @@ export default function NotFoundPage() {
     // Centred in the space the layout leaves, so a wrong URL does not land on
     // a short block with a tall empty band under it.
     <Container className="flex flex-1 flex-col justify-center py-20">
-      <div className="max-w-xl">
+      {/* Centred like the login form, so the block has equal margins instead
+          of sitting hard left with the rest of the screen empty. */}
+      <div className="mx-auto w-full max-w-xl">
         <h1 className="text-2xl font-bold tracking-tight text-neutral-950">
           Page not found
         </h1>
