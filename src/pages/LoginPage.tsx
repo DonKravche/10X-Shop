@@ -21,6 +21,7 @@ const EMPTY_FORM: LoginFormValues = { username: '', password: '' }
 export default function LoginPage() {
   const [values, setValues] = useState<LoginFormValues>(EMPTY_FORM)
   const [errors, setErrors] = useState<LoginFormErrors>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -45,14 +46,26 @@ export default function LoginPage() {
     setErrors((current) => ({ ...current, [name]: undefined }))
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+
+    if (isSubmitting) return
 
     const nextErrors = validateLogin(values)
     setErrors(nextErrors)
     if (hasErrors(nextErrors)) return
 
-    login(values.username)
+    setIsSubmitting(true)
+    // A username claimed through sign up is held to its password; anything
+    // else signs in, which is what A1.6 requires of this demo.
+    const result = await login(values.username, values.password)
+
+    if (!result.ok) {
+      setErrors({ [result.field]: result.message })
+      setIsSubmitting(false)
+      return
+    }
+
     navigate(redirectTo, { replace: true })
   }
 
@@ -64,6 +77,10 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold tracking-tight text-neutral-950">Log in</h1>
         <p className="mt-1 text-sm text-neutral-500">
           Sign in to place your order.
+        </p>
+        <p className="mt-3 text-sm text-neutral-600">
+          This is a demo shop, so any username works. If you created an
+          account here, use the password you chose.
         </p>
 
         <form onSubmit={handleSubmit} noValidate className="mt-8">
@@ -90,14 +107,27 @@ export default function LoginPage() {
             error={errors.password}
           />
 
-          <Button type="submit" fullWidth className="mt-8">
+          <Button type="submit" fullWidth disabled={isSubmitting} className="mt-8">
             Log In
           </Button>
         </form>
 
+        <p className="mt-6 text-sm text-neutral-600">
+          No account yet?{' '}
+          <Link
+            to="/signup"
+            // Carries the guarded destination through, so signing up from
+            // here still returns the visitor to checkout.
+            state={location.state}
+            className="rounded-sm font-medium text-neutral-950 underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+          >
+            Create one
+          </Link>
+        </p>
+
         <Link
           to="/"
-          className="mt-4 inline-flex min-h-11 items-center rounded-sm text-sm text-neutral-600 underline underline-offset-2 transition-colors hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+          className="mt-2 inline-flex min-h-11 items-center rounded-sm text-sm text-neutral-600 underline underline-offset-2 transition-colors hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
         >
           &larr; Back to catalog
         </Link>
