@@ -32,6 +32,10 @@ server, no token and no payment. Nothing you type is sent anywhere.
   malformed product ids.
 - Responsive from 375px to desktop, hover/focus/disabled states throughout, and
   an error boundary so a render failure never leaves a blank page.
+- Verified in Chrome 156 and Firefox 142 at 375px and 1440px — 52 of 52
+  assertions, no horizontal scroll anywhere (`COMPATIBILITY.md`), and a
+  Lighthouse mobile audit at 90 performance / 100 accessibility / 100 best
+  practices / 0 CLS (`docs/lighthouse/`).
 
 ### Not implemented (FULL / BONUS)
 
@@ -41,7 +45,8 @@ built first and FULL is not started without instruction:
 search and debounce, category filter, sorting, pagination, URL-as-state,
 reviews, related products, promo codes, the orders pages, the profile page,
 dark mode and the theme switch, Formik + Yup, `useReducer`, generics and the
-`ApiClient`/`ApiError` classes, lazy routes and Lighthouse reporting.
+`ApiClient`/`ApiError` classes, lazy routes and lazy images, Safari and Edge
+testing, and a full keyboard and screen-reader audit.
 
 ---
 
@@ -148,5 +153,13 @@ After deploying, put the live URL at the top of this file and confirm that
 
 Product data, images and ratings come from [DummyJSON](https://dummyjson.com).
 Typeface: [Geist](https://fonts.google.com/specimen/Geist). Built as the 10X
-Front-end graduation project; see `PLAN.md` for the plan, `REPORT.md` for what
-was delivered against it and `DEBUG-LOG.md` for the debugging record.
+Front-end graduation project.
+
+| Document | What is in it |
+| --- | --- |
+| `PLAN.md` | The plan: scope, work breakdown, risks, schedule |
+| `REPORT.md` | What was delivered against it, with metrics |
+| `DEBUG-LOG.md` | Seven real bugs: symptom, tool, root cause, fix |
+| `COMPATIBILITY.md` | The Chrome and Firefox matrix, 52 assertions |
+| `docs/lighthouse/` | Two full Lighthouse reports, before and after |
+| `docs/compat/` | Screenshots and the script behind the matrix |
