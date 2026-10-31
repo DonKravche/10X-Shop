@@ -27,6 +27,18 @@ export interface Order {
   shipping: ShippingInfo
   subtotal: number
   discount: number
+  /**
+   * What shipping cost at the time it was placed.
+   *
+   * Stored rather than recomputed because the thresholds can change: an order
+   * has to keep showing what was actually charged. It is also what makes the
+   * order's own figures add up - without it the detail page showed a subtotal
+   * and a discount that did not reach the total.
+   *
+   * Named as A1.5 names it, to keep it apart from `shipping`, which is the
+   * address the order goes to.
+   */
+  shippingCost: number
   total: number
   /** new Date().toISOString(), which is what the status is computed from. */
   placedAt: string

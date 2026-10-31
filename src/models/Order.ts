@@ -42,6 +42,7 @@ export class OrderModel {
       shipping,
       subtotal: cart.subtotal(),
       discount: cart.discount(),
+      shippingCost: cart.shipping(),
       total: cart.total(),
       placedAt: placedAt.toISOString(),
     })
@@ -105,8 +106,29 @@ export function isOrder(value: unknown): value is Order {
   )
 }
 
-/** Every saved order, newest first, with anything malformed dropped. */
+/**
+ * Every saved order, newest first, with anything malformed dropped.
+ *
+ * Orders written before `shipping` was stored are repaired rather than shown
+ * wrong: the figure is recoverable exactly, because the total was always
+ * subtotal minus discount plus shipping. Dropping those orders instead would
+ * lose a customer's history over a field they never saw.
+ */
 export function readOrders(stored: Order[] | null): Order[] {
   if (!Array.isArray(stored)) return []
-  return stored.filter(isOrder).sort((a, b) => b.id - a.id)
+
+  return stored
+    .filter(isOrder)
+    .map((order) =>
+      typeof order.shippingCost === 'number'
+        ? order
+        : {
+            ...order,
+            shippingCost: Math.max(
+              Math.round((order.total - order.subtotal + order.discount) * 100) / 100,
+              0,
+            ),
+          },
+    )
+    .sort((a, b) => b.id - a.id)
 }

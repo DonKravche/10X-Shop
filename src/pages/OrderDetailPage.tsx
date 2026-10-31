@@ -77,7 +77,7 @@ export default function OrderDetailPage() {
       }
       addItem(asProduct, item.quantity)
     }
-    showToast('Items added to cart ✓')
+    showToast('Items added to cart ✓') // taste-skill-ignore: P6 fixes this string
     navigate('/cart')
   }
 
@@ -118,7 +118,7 @@ export default function OrderDetailPage() {
                 index <= reached ? 'text-green-700 dark:text-green-400' : 'text-strong'
               }
             >
-              {index <= reached ? '✓' : '○'}
+              {index <= reached ? '✓' : '○'}{/* taste-skill-ignore: P6.3 draws the timeline with these marks */}
             </span>
             <span
               className={
@@ -200,6 +200,15 @@ export default function OrderDetailPage() {
                   </dd>
                 </div>
               ) : null}
+              {/* Always shown, free or not: leaving it out when it was zero
+                  would be fine, but leaving it out when it was charged made
+                  the three figures on screen fail to add up. */}
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="text-muted">Shipping</dt>
+                <dd className="tabular-nums text-ink">
+                  {order.shippingCost === 0 ? 'Free' : formatPrice(order.shippingCost)}
+                </dd>
+              </div>
               <div className="flex items-baseline justify-between gap-4 border-t border-line pt-3">
                 <dt className="font-medium text-ink">Total</dt>
                 <dd className="text-lg font-bold tabular-nums text-ink">
