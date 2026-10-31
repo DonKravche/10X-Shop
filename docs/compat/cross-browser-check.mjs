@@ -63,7 +63,10 @@ async function run(engine, name, launchOptions = {}) {
 
     // 2. A card opens the product page.
     await step('card opens product details', async () => {
-      await page.locator('article h3 a').first().click()
+      // Addressed by where the link goes, not by the heading level it sits
+      // in: an earlier accessibility fix moved the card title from h3 to h2
+      // and silently broke a selector written as `article h3 a`.
+      await page.locator('article a[href^="/products/"]').first().click()
       await page.waitForURL(/\/products\/\d+$/, { timeout: 20000 })
       await page.waitForSelector('h1', { timeout: 20000 })
     })
@@ -101,6 +104,55 @@ async function run(engine, name, launchOptions = {}) {
       await page.getByRole('button', { name: 'Log In' }).click()
       await page.waitForSelector('text=Username is required', { timeout: 10000 })
       await page.waitForSelector('text=Password is required', { timeout: 10000 })
+    })
+
+    // 7a. Sign up (P1.1, FULL) is reachable from login and validates.
+    await step('sign up is reachable from login and validates', async () => {
+      await page.getByRole('link', { name: 'Create one' }).click()
+      await page.waitForURL(/\/signup$/, { timeout: 20000 })
+      await page.fill('#username', 'xb-user')
+      await page.fill('#password', 'secret123')
+      await page.fill('#confirmPassword', 'secret999')
+      await page.getByRole('button', { name: 'Create account' }).click()
+      await page.waitForSelector('text=Passwords do not match', { timeout: 10000 })
+    })
+
+    // 7b. A completed sign up returns to the page the guard interrupted.
+    await step('sign up returns to checkout', async () => {
+      await page.fill('#confirmPassword', 'secret123')
+      await page.getByRole('button', { name: 'Create account' }).click()
+      await page.waitForURL(/\/checkout$/, { timeout: 20000 })
+      await page.waitForSelector('#fullName', { timeout: 20000 })
+    })
+
+    /**
+     * Signs out and walks into the guard again, so the login page is reached
+     * the way a shopper reaches it and still carries /checkout as its
+     * destination. Going straight to /login would drop that state and the
+     * later steps would land on the catalogue instead.
+     */
+    const signOutAndReturnToGuard = async () => {
+      await page.locator('header button', { hasText: 'Log out' }).click()
+      await page.goto(`${BASE}/checkout`, { waitUntil: 'networkidle' })
+      await page.waitForURL(/\/login$/, { timeout: 20000 })
+    }
+
+    // 7c. The password chosen at sign up is the one that is required.
+    await step('a claimed username needs its own password', async () => {
+      await signOutAndReturnToGuard()
+      await page.fill('#username', 'xb-user')
+      await page.fill('#password', 'wrongpass')
+      await page.getByRole('button', { name: 'Log In' }).click()
+      await page.waitForSelector('text=Incorrect password', { timeout: 10000 })
+    })
+
+    // 7d. CORE rule A1.6: any other non-empty username still signs in.
+    await step('an unregistered username still signs in (A1.6)', async () => {
+      await page.fill('#username', 'never-signed-up')
+      await page.fill('#password', 'secret123')
+      await page.getByRole('button', { name: 'Log In' }).click()
+      await page.waitForURL(/\/checkout$/, { timeout: 20000 })
+      await signOutAndReturnToGuard()
     })
 
     // 7. A valid login returns to checkout.

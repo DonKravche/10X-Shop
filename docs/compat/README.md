@@ -28,13 +28,18 @@ and every `overflow` is `false`.
 
 ## What it asserts
 
-Thirteen steps of the CORE flow — catalogue, product, cart, the checkout
-guard, login validation, the order, the three Not-found cases and a direct
-visit to a deep URL — plus a horizontal-scroll measurement after each one, in
-Chrome and Firefox, at 375 × 812 and 1440 × 900.
+Seventeen steps — catalogue, product, cart, the checkout guard, login
+validation, sign up and its two account rules, the order, the three Not-found
+cases and a direct visit to a deep URL — plus a horizontal-scroll measurement
+after each one, in Chrome and Firefox, at 375 × 812 and 1440 × 900.
 
 The steps wait for a named element or URL and throw if it does not arrive, so a
 pass means the behaviour happened, not that the page merely loaded.
+
+**Selectors address behaviour, not markup.** The product link is found by where
+it points, `article a[href^="/products/"]`, not by the heading level it happens
+to sit in. An earlier version used `article h3 a` and went quiet the moment an
+accessibility fix changed that heading to `h2`.
 
 ## Screenshots
 

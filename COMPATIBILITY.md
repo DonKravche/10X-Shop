@@ -8,8 +8,18 @@ the production bundle (`npm run build` then `npm run preview`).
 - **Chrome 156.0.8078.76** — the installed Google Chrome, not bundled Chromium.
 - **Firefox 142.0.1** — Gecko, so the two engines are genuinely different.
 - **Widths:** 375 × 812 (the width O3 names) and 1440 × 900.
-- **Date:** 31 October 2026, against commit `f424cb7`.
+- **Date:** 31 October 2026, re-run against the Sign up work.
 - **Method:** `docs/compat/README.md` records the script and how to re-run it.
+
+> **This matrix went stale once, and that is worth recording.** The first run
+> was made at commit `f424cb7`. A later accessibility fix moved the product
+> card's title from `h3` to `h2`, and the script addressed that link as
+> `article h3 a` — so from that commit until this one, the suite failed at
+> step 2 and every step after it cascaded. The application was fine; the
+> measurement was not. The selector now addresses the link by where it goes
+> (`article a[href^="/products/"]`), which no heading change can break. A
+> check nobody re-runs is not a check, and a brittle selector is how it goes
+> quiet without telling you.
 
 Safari and Edge are FULL-level additions in O3 and were not tested. Edge is
 installed on this machine but shares Chrome's engine, so it would not add a
@@ -29,17 +39,27 @@ document did not scroll sideways at that width.
 | 4 | Cart shows the line and a currency-formatted total | ✓ | ✓ | ✓ | ✓ |
 | 5 | A guest opening `/checkout` is sent to `/login` | ✓ | ✓ | ✓ | ✓ |
 | 6 | Empty login shows "Username is required" and "Password is required" | ✓ | ✓ | ✓ | ✓ |
-| 7 | A valid login returns to `/checkout` | ✓ | ✓ | ✓ | ✓ |
-| 8 | Checkout refuses `not-an-email` with the exact message | ✓ | ✓ | ✓ | ✓ |
-| 9 | A valid order confirms and clears the cart badge | ✓ | ✓ | ✓ | ✓ |
-| 10 | `/nope` shows "Page not found" | ✓ | ✓ | ✓ | ✓ |
-| 11 | `/products/abc` shows "Page not found" | ✓ | ✓ | ✓ | ✓ |
-| 12 | `/products/999999` shows "Page not found" | ✓ | ✓ | ✓ | ✓ |
-| 13 | `/products/5` opens from a direct visit (SPA rewrite) | ✓ | ✓ | ✓ | ✓ |
-| 14 | No horizontal scroll (`scrollWidth === clientWidth`) | ✓ | ✓ | ✓ | ✓ |
+| 7 | Sign up is reachable from login and refuses mismatched passwords | ✓ | ✓ | ✓ | ✓ |
+| 8 | A completed sign up returns to `/checkout` | ✓ | ✓ | ✓ | ✓ |
+| 9 | A claimed username is refused the wrong password | ✓ | ✓ | ✓ | ✓ |
+| 10 | An unregistered username still signs in (A1.6, CORE) | ✓ | ✓ | ✓ | ✓ |
+| 11 | A valid login returns to `/checkout` | ✓ | ✓ | ✓ | ✓ |
+| 12 | Checkout refuses `not-an-email` with the exact message | ✓ | ✓ | ✓ | ✓ |
+| 13 | A valid order confirms and clears the cart badge | ✓ | ✓ | ✓ | ✓ |
+| 14 | `/nope` shows "Page not found" | ✓ | ✓ | ✓ | ✓ |
+| 15 | `/products/abc` shows "Page not found" | ✓ | ✓ | ✓ | ✓ |
+| 16 | `/products/999999` shows "Page not found" | ✓ | ✓ | ✓ | ✓ |
+| 17 | `/products/5` opens from a direct visit (SPA rewrite) | ✓ | ✓ | ✓ | ✓ |
+| — | No horizontal scroll after every step above | ✓ | ✓ | ✓ | ✓ |
 
-**52 of 52 assertions passed.** No layout or behavioural difference was found
-between the two engines, at either width.
+**68 of 68 assertions passed** — 17 steps × 2 widths × 2 browsers. No layout or
+behavioural difference was found between the two engines, at either width.
+
+Rows 9 and 10 are the pair that matters most. Sign up would be meaningless if
+the password it set were never checked (row 9), and CORE would be broken if
+signing up became a precondition for logging in (row 10) — A1.6 fixes that any
+non-empty username signs in, and the CORE Measurable Outcome for P1 depends on
+it. Both are asserted on every run so neither can regress unnoticed.
 
 Screenshots of the catalogue in each browser at each width are in
 `docs/compat/`:
