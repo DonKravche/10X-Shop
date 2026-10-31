@@ -1,28 +1,49 @@
-import { useState } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useFormik } from 'formik'
+import * as Yup from 'yup'
 import Button from '../components/ui/Button'
 import Container from '../components/ui/Container'
 import FormField from '../components/ui/FormField'
 import { useAuth } from '../context/auth-context'
-import type { LoginFormErrors, LoginFormValues } from '../types/user'
-import { hasErrors, validateLogin } from '../utils/validation'
+import type { LoginFormValues } from '../types/user'
+import { PASSWORD_MIN_LENGTH } from '../utils/validation'
 
 const EMPTY_FORM: LoginFormValues = { username: '', password: '' }
 
 /**
- * Annex A, P1. A controlled React form: every input's value comes from state
- * and every keystroke goes through onChange, so React is the single source of
- * truth for what the form contains.
+ * The login rules as a Yup schema (Annex A, P1 FULL).
  *
- * No credentials are checked against anything. Any non-empty username with a
- * password of at least six characters signs in (A1.6, PRD rule 6).
+ * The same rules `validateLogin` states by hand in utils/validation.ts, and
+ * deliberately the same messages: the specification fixes those strings, and
+ * a schema that reworded them would be a different form wearing the same
+ * label. Checkout, sign up and the profile keep the hand-written validators -
+ * Formik is required on Login specifically, and converting the rest would add
+ * a dependency to code that does not need one.
+ */
+const loginSchema = Yup.object({
+  username: Yup.string().trim().required('Username is required'),
+  password: Yup.string()
+    .required('Password is required')
+    .min(
+      PASSWORD_MIN_LENGTH,
+      `Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
+    ),
+})
+
+/**
+ * Annex A, P1. Sign in.
+ *
+ * Formik holds the values, the touched flags, the errors and the submission
+ * state; Yup decides what is valid. The inputs are still controlled React
+ * inputs - Formik's handleChange is an onChange like any other - so nothing
+ * about the data flow changes, only who keeps the bookkeeping.
+ *
+ * No credentials are checked against a server. Any non-empty username with a
+ * password of at least six characters signs in, unless that username was
+ * claimed through sign up, in which case its own password is required
+ * (A1.6, PRD rule 6).
  */
 export default function LoginPage() {
-  const [values, setValues] = useState<LoginFormValues>(EMPTY_FORM)
-  const [errors, setErrors] = useState<LoginFormErrors>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -39,35 +60,33 @@ export default function LoginPage() {
       ? location.state.from
       : '/'
 
-  function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    const { name, value } = event.target
-    setValues((current) => ({ ...current, [name]: value }))
-    // Clear this field's message as soon as the user starts correcting it.
-    setErrors((current) => ({ ...current, [name]: undefined }))
-  }
+  const formik = useFormik<LoginFormValues>({
+    initialValues: EMPTY_FORM,
+    validationSchema: loginSchema,
+    // Validated on submit rather than on every keystroke, so a half-typed
+    // password is not reported as too short while it is being typed.
+    validateOnChange: false,
+    validateOnBlur: true,
+    onSubmit: async (values, helpers) => {
+      // A claimed username is held to its password; anything else signs in,
+      // which is what A1.6 requires of this demo.
+      const result = await login(values.username, values.password)
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+      if (!result.ok) {
+        // The context answers with the field its message belongs under, so
+        // it lands beside the right input instead of as a banner.
+        helpers.setFieldError(result.field, result.message)
+        helpers.setFieldTouched(result.field, true, false)
+        return
+      }
 
-    if (isSubmitting) return
+      navigate(redirectTo, { replace: true })
+    },
+  })
 
-    const nextErrors = validateLogin(values)
-    setErrors(nextErrors)
-    if (hasErrors(nextErrors)) return
-
-    setIsSubmitting(true)
-    // A username claimed through sign up is held to its password; anything
-    // else signs in, which is what A1.6 requires of this demo.
-    const result = await login(values.username, values.password)
-
-    if (!result.ok) {
-      setErrors({ [result.field]: result.message })
-      setIsSubmitting(false)
-      return
-    }
-
-    navigate(redirectTo, { replace: true })
-  }
+  /** Formik reports an error for a field only once it has been touched. */
+  const errorFor = (field: keyof LoginFormValues): string | undefined =>
+    formik.touched[field] === true ? formik.errors[field] : undefined
 
   return (
     // Centred in the space the layout leaves, so the form sits in the middle
@@ -75,24 +94,23 @@ export default function LoginPage() {
     <Container className="flex flex-1 flex-col justify-center py-12">
       <div className="mx-auto w-full max-w-sm">
         <h1 className="text-2xl font-bold tracking-tight text-ink">Log in</h1>
-        <p className="mt-1 text-sm text-subtle">
-          Sign in to place your order.
-        </p>
+        <p className="mt-1 text-sm text-subtle">Sign in to place your order.</p>
         <p className="mt-3 text-sm text-muted">
-          This is a demo shop, so any username works. If you created an
-          account here, use the password you chose.
+          This is a demo shop, so any username works. If you created an account
+          here, use the password you chose.
         </p>
 
-        <form onSubmit={handleSubmit} noValidate className="mt-8">
+        <form onSubmit={formik.handleSubmit} noValidate className="mt-8">
           <FormField
             id="username"
             name="username"
             label="Username"
             type="text"
             autoComplete="username"
-            value={values.username}
-            onChange={handleChange}
-            error={errors.username}
+            value={formik.values.username}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={errorFor('username')}
           />
 
           <FormField
@@ -102,12 +120,18 @@ export default function LoginPage() {
             type="password"
             autoComplete="current-password"
             className="mt-5"
-            value={values.password}
-            onChange={handleChange}
-            error={errors.password}
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={errorFor('password')}
           />
 
-          <Button type="submit" fullWidth disabled={isSubmitting} className="mt-8">
+          <Button
+            type="submit"
+            fullWidth
+            disabled={formik.isSubmitting}
+            className="mt-8"
+          >
             Log In
           </Button>
         </form>
