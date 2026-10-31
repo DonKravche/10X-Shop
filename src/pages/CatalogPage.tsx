@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import CatalogToolbar from '../components/catalog/CatalogToolbar'
+import CategoryCard from '../components/catalog/CategoryCard'
 import ProductCardSkeleton from '../components/product/ProductCardSkeleton'
 import ProductGrid from '../components/product/ProductGrid'
 import Button from '../components/ui/Button'
@@ -8,12 +9,12 @@ import Container from '../components/ui/Container'
 import PageHeader from '../components/ui/PageHeader'
 import Pagination from '../components/ui/Pagination'
 import StateMessage from '../components/ui/StateMessage'
-import { fetchCatalog, fetchCategories } from '../api/products.api'
+import { fetchCatalog, fetchCategories, fetchCategoryShowcase } from '../api/products.api'
 import { useCart } from '../context/cart-context'
 import { useDebounce } from '../hooks/useDebounce'
 import { useToast } from '../context/toast-context'
 import type { AsyncState, CatalogParams } from '../types/api'
-import type { Category, Product, ProductsResponse } from '../types/product'
+import type { Category, CategoryShowcase, Product, ProductsResponse } from '../types/product'
 import { describeRange, isSortOption, totalPages } from '../utils/url'
 import { discountedPrice } from '../utils/format'
 
@@ -52,6 +53,7 @@ export default function CatalogPage() {
   const params = useMemo(() => readParams(search), [search])
 
   const [categories, setCategories] = useState<Category[]>([])
+  const [showcase, setShowcase] = useState<CategoryShowcase[]>([])
   // Counts retries so the effect can be asked to run again without any
   // parameter having changed.
   const [attempt, setAttempt] = useState(0)
@@ -162,6 +164,11 @@ export default function CatalogPage() {
       .then(setCategories)
       // The filter is an enhancement; losing it must not break the page.
       .catch(() => undefined)
+
+    fetchCategoryShowcase(controller.signal)
+      .then(setShowcase)
+      .catch(() => undefined)
+
     return () => controller.abort()
   }, [])
 
@@ -214,6 +221,31 @@ export default function CatalogPage() {
             : undefined
         }
       />
+
+      {/*
+        Categories come before the products, as a shopper who does not know
+        what they want needs a way in before a grid of 194 things. Picking one
+        writes ?category= - the same URL the select writes - so this is a
+        second door onto one mechanism, not a second mechanism.
+
+        Hidden once a category or a query is active: at that point the strip
+        is no longer a way in, it is a row of pictures competing with the
+        results the shopper asked for.
+      */}
+      {showcase.length > 0 && params.category === '' && params.q === '' ? (
+        <section aria-labelledby="browse-heading" className="mb-10">
+          <h2 id="browse-heading" className="mb-4 text-base font-medium text-ink">
+            Browse by category
+          </h2>
+          <ul className="grid grid-cols-3 gap-x-3 gap-y-6 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
+            {showcase.slice(0, 8).map((category) => (
+              <li key={category.slug}>
+                <CategoryCard category={category} size="sm" />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <CatalogToolbar
         query={queryInput}

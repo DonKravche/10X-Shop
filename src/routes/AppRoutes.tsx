@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Layout from '../components/layout/Layout'
-import CatalogPage from '../pages/CatalogPage'
+import LandingPage from '../pages/LandingPage'
 import NotFoundPage from '../pages/NotFoundPage'
 import ProtectedRoute from './ProtectedRoute'
 
@@ -12,11 +12,12 @@ import ProtectedRoute from './ProtectedRoute'
  * opened: the code for Orders is not downloaded by someone who only browses
  * the catalogue. Network shows one request per route on first visit.
  *
- * Catalog and Not found are imported eagerly on purpose. Catalog is the entry
- * point, so splitting it would only add a round trip before the first paint,
- * and Not found is rendered *by* other pages for a bad id - it has to be
- * there already rather than arriving after a second request.
+ * The landing page and Not found are imported eagerly on purpose. The landing
+ * page is the entry point, so splitting it would only add a round trip before
+ * the first paint, and Not found is rendered *by* other pages for a bad id -
+ * it has to be there already rather than arriving after a second request.
  */
+const CatalogPage = lazy(() => import('../pages/CatalogPage'))
 const ProductPage = lazy(() => import('../pages/ProductPage'))
 const CartPage = lazy(() => import('../pages/CartPage'))
 const LoginPage = lazy(() => import('../pages/LoginPage'))
@@ -37,7 +38,8 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={<CatalogPage />} />
+        <Route index element={<LandingPage />} />
+        <Route path="catalog" element={<CatalogPage />} />
         <Route path="products/:id" element={<ProductPage />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="login" element={<LoginPage />} />

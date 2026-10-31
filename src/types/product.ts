@@ -45,3 +45,19 @@ export interface ProductsResponse {
   skip: number
   limit: number
 }
+
+/**
+ * A category with a picture and a count, for the landing sheet and the
+ * catalogue's category strip.
+ *
+ * DummyJSON's `/products/categories` gives only slug, name and url - no
+ * image and no count - so this shape is assembled here from the products
+ * themselves rather than fetched.
+ */
+export interface CategoryShowcase {
+  slug: string
+  name: string
+  /** The first product in the category, standing for the whole of it. */
+  thumbnail: string
+  count: number
+}
