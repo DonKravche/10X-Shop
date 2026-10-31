@@ -28,7 +28,7 @@ and every `overflow` is `false`.
 
 ## What it asserts
 
-Seventeen steps — catalogue, product, cart, the checkout guard, login
+Eighteen steps — the landing page, catalogue, product, cart, the checkout guard, login
 validation, sign up and its two account rules, the order, the three Not-found
 cases and a direct visit to a deep URL — plus a horizontal-scroll measurement
 after each one, in Chrome and Firefox, at 375 × 812 and 1440 × 900.

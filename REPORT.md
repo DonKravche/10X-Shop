@@ -37,6 +37,7 @@ its reason.
 | Page | Requirement | Status |
 | --- | --- | --- |
 | P0 Global | Layout, Router, Header, 404, checkout guard, loading/error/empty | Done |
+| Landing (not in Annex A) | Contact-sheet hero, every category with a picture and a count | Added on instruction |
 | P1 Login | Controlled form, required validation, Context update, redirect | Done |
 | P1.1 Sign Up | FULL — local accounts, hashed password, duplicate names refused | Done on instruction |
 | P2 Catalog | `GET /products`, typed data, ProductCard/Grid, navigation, Add to cart | Done |
@@ -59,6 +60,29 @@ Lighthouse report, the cross-browser matrix, `@theme`, generics, OOP).
 
 Step 24, deploy, is prepared but not executed — it is the one requirement of
 any level still open.
+
+### One deliberate deviation from Annex A1.2
+
+**`/` is a landing page; the catalogue is at `/catalog`.** A1.2's route map
+puts the catalogue at `/`, and this moves it. It was asked for, and it is the
+only place the implementation knowingly departs from the route map, so it is
+recorded here rather than left for a reader to discover.
+
+What was done to keep the CORE outcomes intact:
+
+- **`/` still loads real products from DummyJSON on open.** The landing page
+  makes the same kind of request the catalogue does and shows 48 real product
+  photographs and all 24 categories with live counts, so the Measurable
+  Outcome that opening the site proves the API works is still satisfied from
+  the first screen.
+- **Every link whose words say "catalog" goes to `/catalog`**, and P1.3's
+  fallback after sign-in — "otherwise the catalogue" — points there too.
+- **`/catalog` is the full P2 page**, unchanged: twelve products, the toolbar,
+  pagination and the URL as state.
+- The cross-browser suite asserts both, so neither can regress unnoticed.
+
+Putting the catalogue back at `/` is a two-line change in `AppRoutes.tsx` if
+an examiner would rather have the route map followed literally.
 
 ### Not delivered, and why
 

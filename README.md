@@ -16,7 +16,8 @@ server, no token and no payment. Nothing you type is sent anywhere.
 
 ### Implemented (CORE)
 
-- **Catalog** (`/`) — 12 products from `GET /products`, rendered as typed
+- **Landing** (`/`) — a contact sheet of the real stock, every category with a picture and a count, and the way into the catalogue.
+- **Catalog** (`/catalog`) — 12 products from `GET /products`, rendered as typed
   product cards with loading, error and empty states.
 - **Product details** (`/products/:id`) — image gallery, price, rating, stock
   state, description and a quantity stepper. An unknown or non-numeric id
@@ -104,16 +105,16 @@ src/
   context/     Auth, Cart (+ cart.reducer), Theme, Toast
   hooks/       useDebounce, useNow
   components/
-    layout/    Layout, Header, Footer, ScrollToTop
-    catalog/   CatalogToolbar
+    layout/    Layout, Header, HeaderSearch, Footer, ScrollToTop
+    catalog/   CatalogToolbar, CategoryCard
     product/   ProductCard, ProductGrid, ProductGallery, ProductPrice,
                StockBadge, ProductCardSkeleton, StarRating, Review{List,Form}
     cart/      CartItemRow, CartSummary, PromoForm
     order/     OrderStatusBadge
     ui/        Button, Container, FormField, PageHeader, Pagination,
-               QuantityStepper, StateMessage
+               QuantityStepper, StateMessage, icons
     ErrorBoundary.tsx
-  pages/       Catalog, Product, Cart, Login, SignUp, Checkout,
+  pages/       Landing, Catalog, Product, Cart, Login, SignUp, Checkout,
                Orders, OrderDetail, Profile, NotFound
   routes/      AppRoutes (lazy), ProtectedRoute
   utils/       format (prices, dates), validation (form rules),

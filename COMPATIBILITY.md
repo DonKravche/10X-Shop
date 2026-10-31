@@ -33,6 +33,7 @@ document did not scroll sideways at that width.
 
 | # | What was checked | Chrome 375 | Chrome 1440 | Firefox 375 | Firefox 1440 |
 | --- | --- | :-: | :-: | :-: | :-: |
+| 0 | Landing shows every category and a sheet of real product photographs | ✓ | ✓ | ✓ | ✓ |
 | 1 | Catalog loads and renders exactly 12 product cards | ✓ | ✓ | ✓ | ✓ |
 | 2 | A card opens `/products/:id` | ✓ | ✓ | ✓ | ✓ |
 | 3 | Add to cart moves the header badge to 1 | ✓ | ✓ | ✓ | ✓ |
@@ -52,7 +53,7 @@ document did not scroll sideways at that width.
 | 17 | `/products/5` opens from a direct visit (SPA rewrite) | ✓ | ✓ | ✓ | ✓ |
 | — | No horizontal scroll after every step above | ✓ | ✓ | ✓ | ✓ |
 
-**68 of 68 assertions passed** — 17 steps × 2 widths × 2 browsers. No layout or
+**72 of 72 assertions passed** — 18 steps × 2 widths × 2 browsers. No layout or
 behavioural difference was found between the two engines, at either width.
 
 Rows 9 and 10 are the pair that matters most. Sign up would be meaningless if
