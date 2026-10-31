@@ -97,3 +97,28 @@ export function validateCheckout(values: CheckoutFormValues): CheckoutFormErrors
 export function hasErrors(errors: Record<string, string | undefined>): boolean {
   return Object.values(errors).some((message) => message !== undefined)
 }
+
+export const COMMENT_MIN_LENGTH = 10
+
+/** One review being written (Annex A, P3.4). */
+export interface ReviewFormValues {
+  rating: number
+  comment: string
+}
+
+export type ReviewFormErrors = Partial<Record<keyof ReviewFormValues, string>>
+
+/** Reviews: a star must be chosen and the comment must say something. */
+export function validateReview(values: ReviewFormValues): ReviewFormErrors {
+  const errors: ReviewFormErrors = {}
+
+  if (!Number.isInteger(values.rating) || values.rating < 1 || values.rating > 5) {
+    errors.rating = 'Please select a rating'
+  }
+
+  if (values.comment.trim().length < COMMENT_MIN_LENGTH) {
+    errors.comment = `Comment must be at least ${COMMENT_MIN_LENGTH} characters`
+  }
+
+  return errors
+}

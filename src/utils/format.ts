@@ -27,3 +27,9 @@ export function discountedPrice(price: number, discountPercentage: number): numb
 export function hasDiscount(discountPercentage: number): boolean {
   return discountPercentage >= 1
 }
+
+/** An ISO date as the reader's locale writes it (Annex A, T3). */
+export function formatDate(iso: string): string {
+  const date = new Date(iso)
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString()
+}
