@@ -4,7 +4,12 @@ interface PageHeaderProps {
   title: string
   /** One short sentence about the data on this screen, never about the UI. */
   description?: string
-  /** Optional actions, rendered at the right of the title row on desktop. */
+  /**
+   * Optional controls, rendered at the right of the title row from 640px and
+   * on their own line below it under that. Putting a screen's filters here
+   * rather than in a row of their own closes the empty right half the title
+   * would otherwise leave, and lifts the content up the screen.
+   */
   children?: ReactNode
 }
 
@@ -23,7 +28,9 @@ export default function PageHeader({ title, description, children }: PageHeaderP
           <p className="mt-1 text-sm text-subtle">{description}</p>
         ) : null}
       </div>
-      {children ? <div className="flex items-center gap-2">{children}</div> : null}
+      {children ? (
+        <div className="flex w-full items-center gap-2 sm:w-auto">{children}</div>
+      ) : null}
     </div>
   )
 }

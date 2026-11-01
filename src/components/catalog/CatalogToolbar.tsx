@@ -55,7 +55,7 @@ export default function CatalogToolbar({
   }
 
   return (
-    <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[16rem_16rem]">
+    <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 sm:w-auto lg:grid-cols-[14rem_14rem]">
       <div className="sm:col-span-2 md:hidden">
         <CatalogSearch query={query} onQueryChange={onQueryChange} />
       </div>

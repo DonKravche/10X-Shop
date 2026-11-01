@@ -248,27 +248,47 @@ export default function CatalogPage() {
           }
         />
       ) : (
-        <PageHeader
-          title={openDepartment?.name ?? 'Catalog'}
-          description={
-            state.status === 'success'
-              ? describeRange(params.page, products.length, total)
-              : undefined
-          }
-        />
-      )}
+        <>
+          {/*
+            The way back out, above the title rather than under it. A
+            department's screen was four left-aligned rows deep - title,
+            count, this link, then the controls - before a single product
+            appeared, each one leaving two thirds of the width empty.
+          */}
+          <button
+            type="button"
+            onClick={() => setSearch(new URLSearchParams())}
+            className="mb-3 inline-flex min-h-11 w-fit items-center gap-2 rounded-sm text-sm text-muted underline underline-offset-2 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+          >
+            <ArrowRightIcon size={16} className="rotate-180" />
+            All departments
+          </button>
 
-      {/* A way back out of a department, in the place a reader looks for it. */}
-      {!showingDepartments ? (
-        <button
-          type="button"
-          onClick={() => setSearch(new URLSearchParams())}
-          className="mb-6 inline-flex min-h-11 w-fit items-center gap-2 rounded-sm text-sm text-muted underline underline-offset-2 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-        >
-          <ArrowRightIcon size={16} className="rotate-180" />
-          All departments
-        </button>
-      ) : null}
+          {/* The filters ride on the title row, which closes the void at its
+              right and lifts the products up the screen. */}
+          <PageHeader
+            title={openDepartment?.name ?? 'Catalog'}
+            description={
+              state.status === 'success'
+                ? describeRange(params.page, products.length, total)
+                : undefined
+            }
+          >
+            <CatalogToolbar
+              query={queryInput}
+              onQueryChange={setQueryInput}
+              categories={categories}
+              category={params.category}
+              onCategoryChange={(category) =>
+                // Choosing a category clears the query, for the same reason as above.
+                updateParams({ category, q: '', page: 1 })
+              }
+              sort={params.sort}
+              onSortChange={(sort) => updateParams({ sort, page: 1 })}
+            />
+          </PageHeader>
+        </>
+      )}
 
       {/*
         The departments. Every one of them, not a strip of eight: this is the
@@ -310,20 +330,7 @@ export default function CatalogPage() {
 
       {!showingDepartments ? (
         <>
-          <CatalogToolbar
-        query={queryInput}
-        onQueryChange={setQueryInput}
-        categories={categories}
-        category={params.category}
-        onCategoryChange={(category) =>
-          // Choosing a category clears the query, for the same reason as above.
-          updateParams({ category, q: '', page: 1 })
-        }
-        sort={params.sort}
-        onSortChange={(sort) => updateParams({ sort, page: 1 })}
-      />
-
-      {state.status === 'loading' ? (
+          {state.status === 'loading' ? (
         <>
           <p role="status" className="sr-only">
             Loading products
