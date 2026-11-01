@@ -28,7 +28,8 @@ and every `overflow` is `false`.
 
 ## What it asserts
 
-Eighteen steps — the landing page, catalogue, product, cart, the checkout guard, login
+Twenty steps — the landing page, the catalogue in both of its states, one
+department, the paged catalogue, a product, the cart, the checkout guard, login
 validation, sign up and its two account rules, the order, the three Not-found
 cases and a direct visit to a deep URL — plus a horizontal-scroll measurement
 after each one, in Chrome and Firefox, at 375 × 812 and 1440 × 900.
@@ -41,11 +42,31 @@ it points, `article a[href^="/products/"]`, not by the heading level it happens
 to sit in. An earlier version used `article h3 a` and went quiet the moment an
 accessibility fix changed that heading to `h2`.
 
+**Each wait names what that state actually renders.** The same lesson caught the
+script a second time when `/catalog` became a page of departments: the final
+screenshot block still waited for an `article` there, and because it sat outside
+`step()`'s try/catch it threw and took the entire run down — no results file at
+all, in either browser. Waits on the departments view now look for
+`a[href^="/catalog?category="]`, and only the views that render cards wait for
+`article`.
+
+**Expected failures are named, not ignored.** The suite asks DummyJSON for
+`/products/999999` on purpose, so that one URL is allowed to 404. Every other
+response of status 400 or worse fails the run, in both engines — see the last
+section of `COMPATIBILITY.md`.
+
 ## Screenshots
+
+Both of the catalogue's states are captured: `-catalog` is the departments a
+shopper lands on, `-department` is `/catalog?category=laptops` inside one.
 
 | File | Browser | Width |
 | --- | --- | --- |
 | `chrome-mobile-catalog.png` | Chrome 156 | 375px |
 | `chrome-desktop-catalog.png` | Chrome 156 | 1440px |
+| `chrome-mobile-department.png` | Chrome 156 | 375px |
+| `chrome-desktop-department.png` | Chrome 156 | 1440px |
 | `firefox-mobile-catalog.png` | Firefox 142 | 375px |
 | `firefox-desktop-catalog.png` | Firefox 142 | 1440px |
+| `firefox-mobile-department.png` | Firefox 142 | 375px |
+| `firefox-desktop-department.png` | Firefox 142 | 1440px |

@@ -5,6 +5,12 @@ const BASE = 'http://localhost:4173'
 const SHOT_DIR = process.argv[2]
 mkdirSync(SHOT_DIR, { recursive: true })
 
+// Step 19 asks DummyJSON for a product that does not exist, so its 404 is
+// the assertion, not a defect. Chrome echoes every failed response into the
+// console (Firefox does not), so the URL is named here and judged by the
+// response listener rather than by the console text, which carries no URL.
+const EXPECTED_404 = 'dummyjson.com/products/999999'
+
 const VIEWPORTS = [
   { name: 'mobile', width: 375, height: 812 },
   { name: 'desktop', width: 1440, height: 900 },
@@ -28,8 +34,19 @@ async function run(engine, name, launchOptions = {}) {
     })
     const page = await context.newPage()
     const consoleErrors = []
+    const failedRequests = []
+    page.on('response', (r) => {
+      if (r.status() >= 400 && !r.url().includes(EXPECTED_404)) {
+        failedRequests.push(r.status() + ' ' + r.url())
+      }
+    })
     page.on('console', (m) => {
-      if (m.type() === 'error') consoleErrors.push(m.text())
+      if (m.type() !== 'error') return
+      // The generic 'Failed to load resource' line names no URL, so it
+      // cannot be judged here; the response listener above decides whether
+      // the request behind it was one this script asked for.
+      if (/Failed to load resource/.test(m.text())) return
+      consoleErrors.push(m.text())
     })
     page.on('pageerror', (e) => consoleErrors.push(String(e)))
 
@@ -67,9 +84,30 @@ async function run(engine, name, launchOptions = {}) {
       if (frames < 24) throw new Error(`expected a sheet, got ${frames} frames`)
     })
 
-    // 1. Catalog loads from DummyJSON and renders cards.
-    await step('catalog loads 12 products', async () => {
+    // 1a. The catalogue opens on its departments, not on a grid of 194.
+    await step('catalog opens on the departments', async () => {
       await page.goto(`${BASE}/catalog`, { waitUntil: 'networkidle' })
+      await page.waitForSelector('a[href^="/catalog?category="]', { timeout: 20000 })
+      const departments = await page.locator('a[href^="/catalog?category="]').count()
+      if (departments < 20) throw new Error(`expected every department, got ${departments}`)
+      if ((await page.locator('article').count()) !== 0) {
+        throw new Error('products shown before a department was chosen')
+      }
+    })
+
+    // 1b. Opening one shows its products, as ProductCards from the API.
+    await step('a department shows its products', async () => {
+      await page.locator('a[href="/catalog?category=laptops"]').click()
+      await page.waitForSelector('article', { timeout: 20000 })
+      const cards = await page.locator('article').count()
+      if (cards === 0) throw new Error('no products in the department')
+    })
+
+    // 1c. Asking for the whole catalogue still pages twelve at a time.
+    await step('the whole catalogue pages twelve at a time', async () => {
+      await page.goto(`${BASE}/catalog?page=1&sort=title-asc`, {
+        waitUntil: 'networkidle',
+      })
       await page.waitForSelector('article', { timeout: 20000 })
       const cards = await page.locator('article').count()
       if (cards !== 12) throw new Error(`expected 12 cards, got ${cards}`)
@@ -229,19 +267,36 @@ async function run(engine, name, launchOptions = {}) {
       await page.waitForSelector('h1', { timeout: 20000 })
     })
 
+    // Both of the catalogue's states are worth a picture: the departments a
+    // shopper lands on, and the products inside one of them. This waits for
+    // what each state actually renders - waiting for `article` on the
+    // departments view is what made this script throw outside `step()` and
+    // take the whole run down with it.
     await page.goto(`${BASE}/catalog`, { waitUntil: 'networkidle' })
-    await page.waitForSelector('article', { timeout: 20000 })
+    await page.waitForSelector('a[href^="/catalog?category="]', {
+      timeout: 20000,
+    })
     await page.screenshot({
       path: `${SHOT_DIR}/${name}-${vp.name}-catalog.png`,
       fullPage: false,
     })
 
+    await page.goto(`${BASE}/catalog?category=laptops`, {
+      waitUntil: 'networkidle',
+    })
+    await page.waitForSelector('article', { timeout: 20000 })
+    await page.screenshot({
+      path: `${SHOT_DIR}/${name}-${vp.name}-department.png`,
+      fullPage: false,
+    })
+
+    const noise = [...consoleErrors, ...failedRequests]
     results.push({
       viewport: vp.name,
-      step: 'console errors',
-      ok: consoleErrors.length === 0,
+      step: 'no console errors or unexpected failed requests',
+      ok: noise.length === 0,
       overflow: null,
-      error: consoleErrors.length ? consoleErrors.join(' | ') : undefined,
+      error: noise.length ? noise.join(' | ') : undefined,
     })
 
     await context.close()

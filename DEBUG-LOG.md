@@ -476,6 +476,59 @@ currently compiles without.
 
 ---
 
+## 12. The cross-browser suite stopped producing any result at all
+
+**Symptom.** `node cross-browser-check.mjs` exited 1 and wrote an empty
+results file. Not one failing row — nothing, in either browser:
+
+```
+page.waitForSelector: Timeout 20000ms exceeded.
+Call log:
+  - waiting for locator('article') to be visible
+    at run (check.mjs:254:16)
+```
+
+**Reproduction.** Run the suite against the department catalogue. Line 254 is
+not in a step; it is the screenshot block after the last one.
+
+**Tool.** The exit code, then the stack trace's line number. The trace pointed
+at line 254 while the last assertion in the file ends at 251 — which was itself
+the clue: the failure was *after* the tests.
+
+**Root cause.** Two mistakes meeting. The first is a stale wait: the suite ends
+by loading `/catalog` and screenshotting it, and it waited for an `article` to
+appear there. That was right for a catalogue that opened on a grid of products
+and wrong the moment `/catalog` became a page of departments, which render no
+`article` at all.
+
+The second is the one that did the damage. Every assertion in this script runs
+inside `step()`, which catches, records the failure and carries on. The
+screenshot block sits outside it. So a stale wait that should have been one red
+cell became an uncaught `TimeoutError` that killed the process before
+`console.log(JSON.stringify(...))` on the last line ever ran — destroying the
+other 83 results, including the 20 that had already passed.
+
+**Fix.** The waits now name what each state actually renders:
+`a[href^="/catalog?category="]` for the departments view, `article` only for
+views that show cards. Both states are screenshotted, so the evidence folder
+now carries `-catalog` (the departments) and `-department` (inside one).
+
+**Verification.** 84 of 84 assertions, Chrome and Firefox, 375 and 1440, zero
+horizontal scroll — and the three new catalogue steps among them. The run that
+proves the restructure is the run the restructure had broken.
+
+**What I learned.** This is entry 8's lesson arriving from the other side. There
+I wrote that a check nobody re-runs is not a check; here the check was re-run
+immediately and still told me nothing, because the harness was less robust than
+the thing it was testing. A step that fails should cost one row. Anything
+outside the error handling can cost the whole run, so there should be as little
+of it as possible — and what is left should assert nothing. Reaching for
+`article` as shorthand for "the catalogue has loaded" was also a habit worth
+dropping: it encoded what the page happened to look like last month rather than
+what the step actually needed.
+
+---
+
 ## Checking the error boundary
 
 Not a bug, but worth recording since the boundary is otherwise invisible.

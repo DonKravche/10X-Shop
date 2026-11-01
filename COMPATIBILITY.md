@@ -8,7 +8,7 @@ the production bundle (`npm run build` then `npm run preview`).
 - **Chrome 156.0.8078.76** — the installed Google Chrome, not bundled Chromium.
 - **Firefox 142.0.1** — Gecko, so the two engines are genuinely different.
 - **Widths:** 375 × 812 (the width O3 names) and 1440 × 900.
-- **Date:** 31 October 2026, re-run against the Sign up work.
+- **Date:** 1 November 2026, re-run against the department catalogue.
 - **Method:** `docs/compat/README.md` records the script and how to re-run it.
 
 > **This matrix went stale once, and that is worth recording.** The first run
@@ -34,7 +34,9 @@ document did not scroll sideways at that width.
 | # | What was checked | Chrome 375 | Chrome 1440 | Firefox 375 | Firefox 1440 |
 | --- | --- | :-: | :-: | :-: | :-: |
 | 0 | Landing shows every category and a sheet of real product photographs | ✓ | ✓ | ✓ | ✓ |
-| 1 | Catalog loads and renders exactly 12 product cards | ✓ | ✓ | ✓ | ✓ |
+| 1a | `/catalog` opens on every department and shows no products yet | ✓ | ✓ | ✓ | ✓ |
+| 1b | Opening a department renders its products as cards | ✓ | ✓ | ✓ | ✓ |
+| 1c | The unfiltered catalogue still pages exactly 12 at a time | ✓ | ✓ | ✓ | ✓ |
 | 2 | A card opens `/products/:id` | ✓ | ✓ | ✓ | ✓ |
 | 3 | Add to cart moves the header badge to 1 | ✓ | ✓ | ✓ | ✓ |
 | 4 | Cart shows the line and a currency-formatted total | ✓ | ✓ | ✓ | ✓ |
@@ -52,9 +54,18 @@ document did not scroll sideways at that width.
 | 16 | `/products/999999` shows "Page not found" | ✓ | ✓ | ✓ | ✓ |
 | 17 | `/products/5` opens from a direct visit (SPA rewrite) | ✓ | ✓ | ✓ | ✓ |
 | — | No horizontal scroll after every step above | ✓ | ✓ | ✓ | ✓ |
+| — | No console error and no unexpected failed request | ✓ | ✓ | ✓ | ✓ |
 
-**72 of 72 assertions passed** — 18 steps × 2 widths × 2 browsers. No layout or
-behavioural difference was found between the two engines, at either width.
+**84 of 84 assertions passed** — 20 steps plus one console-and-network check,
+each at 2 widths in 2 browsers. No layout or behavioural difference was found
+between the two engines, at either width.
+
+Rows 1a to 1c are the three the catalogue restructure added. The catalogue now
+opens on its departments, so 1a asserts both halves of that — every department
+is offered, and no products are shown before one is chosen. 1b proves a
+department really fetches and renders its own stock. 1c keeps the CORE P2
+promise honest: asking for the whole catalogue still returns a page of exactly
+twelve, so the restructure changed the entry point, not the pagination.
 
 Rows 9 and 10 are the pair that matters most. Sign up would be meaningless if
 the password it set were never checked (row 9), and CORE would be broken if
@@ -62,13 +73,15 @@ signing up became a precondition for logging in (row 10) — A1.6 fixes that any
 non-empty username signs in, and the CORE Measurable Outcome for P1 depends on
 it. Both are asserted on every run so neither can regress unnoticed.
 
-Screenshots of the catalogue in each browser at each width are in
-`docs/compat/`:
+Screenshots of both of the catalogue's states, in each browser at each width,
+are in `docs/compat/`:
 
 | | 375px | 1440px |
 | --- | --- | --- |
-| Chrome | `chrome-mobile-catalog.png` | `chrome-desktop-catalog.png` |
-| Firefox | `firefox-mobile-catalog.png` | `firefox-desktop-catalog.png` |
+| Chrome, departments | `chrome-mobile-catalog.png` | `chrome-desktop-catalog.png` |
+| Chrome, one department | `chrome-mobile-department.png` | `chrome-desktop-department.png` |
+| Firefox, departments | `firefox-mobile-catalog.png` | `firefox-desktop-catalog.png` |
+| Firefox, one department | `firefox-mobile-department.png` | `firefox-desktop-department.png` |
 
 ## The one difference, and why it is not a defect
 
@@ -79,17 +92,26 @@ Failed to load resource: the server responded with a status of 404 ()
   https://dummyjson.com/products/999999
 ```
 
-That request is row 12 doing its job. `fetchProductById` asks DummyJSON for a
+That request is row 16 doing its job. `fetchProductById` asks DummyJSON for a
 product that does not exist, DummyJSON answers 404, and the function returns
 `null` so the page can show "Page not found" rather than an error. Chrome
 reports every failed HTTP response in the console whether or not the page
 handles it; Firefox does not. Nothing is thrown, nothing is unhandled, and the
 user-facing result is identical in both browsers.
 
-Confirmed by listening for failing responses directly: loading the catalogue,
-a real product, the cart, login and checkout produces no failing request in
-either browser. The only 404 in the whole suite is the one above, which the
-application asks for on purpose.
+**The suite now tells the two apart itself**, rather than leaving a red cell for
+a human to excuse. Chrome's message names no URL — it is the same sentence for a
+deliberate probe and for a genuinely missing asset — so the script cannot judge
+it from the text. It listens to the network as well, treats one named URL
+(`dummyjson.com/products/999999`) as expected, and fails the run on any other
+request of status 400 or worse. That makes the check stricter than the console
+one it replaced: it now also catches a failed request in Firefox, which Firefox
+would never have printed.
+
+Verified by walking every route with a response listener attached. The landing
+page, the departments, one department, the paged catalogue, a real product,
+`/nope` and `/products/abc` produce no failing request at all. The only 404 in
+the whole suite is the one above, which the application asks for on purpose.
 
 ## What was not covered
 

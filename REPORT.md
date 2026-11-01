@@ -40,7 +40,7 @@ its reason.
 | Landing (not in Annex A) | The shop as its own mail-order catalogue: cover, issue figures, two scrollable runs, departments | Added on instruction |
 | P1 Login | Controlled form, required validation, Context update, redirect | Done |
 | P1.1 Sign Up | FULL — local accounts, hashed password, duplicate names refused | Done on instruction |
-| P2 Catalog | `GET /products`, typed data, ProductCard/Grid, navigation, Add to cart | Done |
+| P2 Catalog | `GET /products`, typed data, ProductCard/Grid, navigation, Add to cart | Done; opens on departments (deviation 2) |
 | P2.2-P2.8 Catalog FULL | Skeletons, Retry, AbortController, search + debounce, category, sort, pagination, URL-as-state | Done |
 | P3 Product | `useParams`, `GET /products/:id`, details, stock states, Add to cart | Done |
 | P3.4-P3.5 Product FULL | Tabs, reviews with a live average, related products | Done |
@@ -61,12 +61,14 @@ Lighthouse report, the cross-browser matrix, `@theme`, generics, OOP).
 Step 24, deploy, is prepared but not executed — it is the one requirement of
 any level still open.
 
-### One deliberate deviation from Annex A1.2
+### Two deliberate deviations from Annex A1.2
 
-**`/` is a landing page; the catalogue is at `/catalog`.** A1.2's route map
-puts the catalogue at `/`, and this moves it. It was asked for, and it is the
-only place the implementation knowingly departs from the route map, so it is
-recorded here rather than left for a reader to discover.
+Both were asked for, both touch how a shopper reaches the products, and both
+are recorded here rather than left for a reader to discover.
+
+#### 1. `/` is a landing page; the catalogue is at `/catalog`
+
+A1.2's route map puts the catalogue at `/`, and this moves it.
 
 What was done to keep the CORE outcomes intact:
 
@@ -77,12 +79,50 @@ What was done to keep the CORE outcomes intact:
   the first screen.
 - **Every link whose words say "catalog" goes to `/catalog`**, and P1.3's
   fallback after sign-in — "otherwise the catalogue" — points there too.
-- **`/catalog` is the full P2 page**, unchanged: twelve products, the toolbar,
-  pagination and the URL as state.
+- **`/catalog` is still the full P2 page**: the same request, the same
+  `ProductGrid`, the same toolbar, twelve to a page and the URL as state. What
+  changed is only which of its two states opens first — see the next deviation.
 - The cross-browser suite asserts both, so neither can regress unnoticed.
 
 Putting the catalogue back at `/` is a two-line change in `AppRoutes.tsx` if
 an examiner would rather have the route map followed literally.
+
+#### 2. `/catalog` opens on its departments, not on products
+
+P2's CORE Measurable Outcome is that opening the catalogue shows a grid of
+products fetched from the API. `/catalog` now opens on all 24 departments
+instead, each a card with its own photograph and live count; the products
+appear once one is chosen. This was asked for in those words — leave only
+"browse by department" on the catalogue page, and show each category's products
+when a shopper navigates into it.
+
+It is a real deviation and worth naming plainly: a reader following A1.2 and
+P2.1 expects `/catalog` to render cards, and on first load it does not.
+
+What was done to keep the CORE outcome intact:
+
+- **`/catalog` still calls the products endpoint on open.** The departments
+  view is built from the same `fetchStorefront()` request, and the count on
+  each card is real API data, so the page still proves the fetch works before
+  a single product is shown.
+- **Products are one click away, and nothing about them changed.** A department
+  renders the same `ProductGrid` of the same `ProductCard`s, with the toolbar,
+  the sort, the pagination and the URL as state all intact.
+- **The grid of twelve is still reachable directly and still asserted.**
+  `/catalog?page=1&sort=title-asc` returns exactly twelve cards, and the
+  cross-browser matrix checks that on every run (row 1c) alongside the two new
+  department rows — so the restructure cannot quietly become a loss of P2.
+- **Search still spans the whole catalogue.** Typing in the search field — on
+  the departments view or in the toolbar — queries every product, not one
+  department, so the departments are an entry point rather than a wall.
+
+The condition is one expression in `CatalogPage.tsx`:
+
+```tsx
+const showingDepartments = !hasFilters && params.page === 1
+```
+
+Inverting it restores A1.2's behaviour exactly, with no other change.
 
 ### Not delivered, and why
 
