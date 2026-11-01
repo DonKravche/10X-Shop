@@ -1,6 +1,7 @@
 import type { ChangeEvent } from 'react'
 import type { Category } from '../../types/product'
 import type { SortOption } from '../../types/api'
+import CatalogSearch from './CatalogSearch'
 
 interface CatalogToolbarProps {
   /** The live text in the box, which is not yet the text being searched for. */
@@ -32,6 +33,11 @@ const CONTROL =
  *
  * A presentational component: it reports changes and renders what it is
  * given. The page owns the URL, which owns the state.
+ *
+ * The search field is `md:hidden` because from 768px the header carries the
+ * same box, bound to the same `?q=` and debounced the same way. Hiding it
+ * removes the item from the grid altogether, so the row becomes category and
+ * sort rather than two controls and a gap.
  */
 export default function CatalogToolbar({
   query,
@@ -49,19 +55,9 @@ export default function CatalogToolbar({
   }
 
   return (
-    <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr]">
-      <div>
-        <label htmlFor="catalog-search" className="sr-only">
-          Search products
-        </label>
-        <input
-          id="catalog-search"
-          type="search"
-          value={query}
-          onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Search products"
-          className={`${CONTROL} placeholder:text-subtle`}
-        />
+    <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[16rem_16rem]">
+      <div className="sm:col-span-2 md:hidden">
+        <CatalogSearch query={query} onQueryChange={onQueryChange} />
       </div>
 
       <div>

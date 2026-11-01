@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import CatalogToolbar from '../components/catalog/CatalogToolbar'
+import CatalogSearch from '../components/catalog/CatalogSearch'
 import CategoryCard from '../components/catalog/CategoryCard'
 import ProductCardSkeleton from '../components/product/ProductCardSkeleton'
 import ProductGrid from '../components/product/ProductGrid'
@@ -9,6 +10,7 @@ import Container from '../components/ui/Container'
 import PageHeader from '../components/ui/PageHeader'
 import Pagination from '../components/ui/Pagination'
 import StateMessage from '../components/ui/StateMessage'
+import { ArrowRightIcon } from '../components/ui/icons'
 import { fetchCatalog, fetchCategories, fetchCategoryShowcase } from '../api/products.api'
 import { useCart } from '../context/cart-context'
 import { useDebounce } from '../hooks/useDebounce'
@@ -211,43 +213,104 @@ export default function CatalogPage() {
   const total = state.status === 'success' ? state.data.total : 0
   const hasFilters = params.q !== '' || params.category !== '' || params.sort !== ''
 
+  /**
+   * The catalogue has two states.
+   *
+   * With nothing asked for it is the departments: a shopper who does not yet
+   * know what they want is better served by twenty-four doors than by a grid
+   * of 194 things whose first page is all cosmetics. Choosing a department -
+   * or searching, or sorting - is what asks a question, and then the page
+   * answers it with products.
+   *
+   * `/catalog` still calls the products endpoint in that state: the count
+   * under every department is read from the stock itself, not claimed.
+   *
+   * A page number counts as asking too, so a shared link to page 2 of the
+   * whole catalogue opens on page 2 rather than on the departments.
+   */
+  const showingDepartments = !hasFilters && params.page === 1
+
+  /** The department being shown, for the heading and the count. */
+  const openDepartment = showcase.find((entry) => entry.slug === params.category)
+
   return (
     <Container className="flex flex-1 flex-col py-8">
-      <PageHeader
-        title="Catalog"
-        description={
-          state.status === 'success'
-            ? describeRange(params.page, products.length, total)
-            : undefined
-        }
-      />
+      {showingDepartments ? (
+        <PageHeader
+          title="Browse by department"
+          description={
+            showcase.length > 0
+              ? `${showcase.length} departments · ${showcase.reduce(
+                  (sum, entry) => sum + entry.count,
+                  0,
+                )} products`
+              : undefined
+          }
+        />
+      ) : (
+        <PageHeader
+          title={openDepartment?.name ?? 'Catalog'}
+          description={
+            state.status === 'success'
+              ? describeRange(params.page, products.length, total)
+              : undefined
+          }
+        />
+      )}
 
-      {/*
-        Categories come before the products, as a shopper who does not know
-        what they want needs a way in before a grid of 194 things. Picking one
-        writes ?category= - the same URL the select writes - so this is a
-        second door onto one mechanism, not a second mechanism.
-
-        Hidden once a category or a query is active: at that point the strip
-        is no longer a way in, it is a row of pictures competing with the
-        results the shopper asked for.
-      */}
-      {showcase.length > 0 && params.category === '' && params.q === '' ? (
-        <section aria-labelledby="browse-heading" className="mb-10">
-          <h2 id="browse-heading" className="mb-4 text-base font-medium text-ink">
-            Browse by category
-          </h2>
-          <ul className="grid grid-cols-3 gap-x-3 gap-y-6 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
-            {showcase.slice(0, 8).map((category) => (
-              <li key={category.slug}>
-                <CategoryCard category={category} size="sm" />
-              </li>
-            ))}
-          </ul>
-        </section>
+      {/* A way back out of a department, in the place a reader looks for it. */}
+      {!showingDepartments ? (
+        <button
+          type="button"
+          onClick={() => setSearch(new URLSearchParams())}
+          className="mb-6 inline-flex min-h-11 w-fit items-center gap-2 rounded-sm text-sm text-muted underline underline-offset-2 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        >
+          <ArrowRightIcon size={16} className="rotate-180" />
+          All departments
+        </button>
       ) : null}
 
-      <CatalogToolbar
+      {/*
+        The departments. Every one of them, not a strip of eight: this is the
+        whole way in now, so leaving sixteen of them off the page would hide
+        most of the shop behind a select.
+
+        The search field above them is the way in for a shopper who already
+        knows the word. It is `md:hidden` because from 768px the header is
+        showing the same box, and two fields with the same label on one screen
+        is a duplicate, not a convenience.
+      */}
+      {showingDepartments ? (
+        <>
+          <div className="mb-8 max-w-md md:hidden">
+            <CatalogSearch query={queryInput} onQueryChange={setQueryInput} />
+          </div>
+
+          {showcase.length === 0 ? (
+            <StateMessage
+              fill
+              title={state.status === 'error' ? 'We could not load the departments' : 'Loading departments...'}
+              description={state.status === 'error' ? state.message : undefined}
+            >
+              {state.status === 'error' ? (
+                <Button onClick={() => setAttempt((count) => count + 1)}>Retry</Button>
+              ) : null}
+            </StateMessage>
+          ) : (
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+              {showcase.map((category) => (
+                <li key={category.slug}>
+                  <CategoryCard category={category} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      ) : null}
+
+      {!showingDepartments ? (
+        <>
+          <CatalogToolbar
         query={queryInput}
         onQueryChange={setQueryInput}
         categories={categories}
@@ -302,14 +365,16 @@ export default function CatalogPage() {
         </StateMessage>
       ) : null}
 
-      {state.status === 'success' && products.length > 0 ? (
-        <>
-          <ProductGrid products={products} onAdd={handleAdd} />
-          <Pagination
-            page={params.page}
-            totalPages={totalPages(total)}
-            onChange={(page) => updateParams({ page })}
-          />
+          {state.status === 'success' && products.length > 0 ? (
+            <>
+              <ProductGrid products={products} onAdd={handleAdd} />
+              <Pagination
+                page={params.page}
+                totalPages={totalPages(total)}
+                onChange={(page) => updateParams({ page })}
+              />
+            </>
+          ) : null}
         </>
       ) : null}
     </Container>
