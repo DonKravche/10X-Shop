@@ -8,6 +8,7 @@ import Container from '../ui/Container'
 import HeaderSearch from './HeaderSearch'
 import {
   CartIcon,
+  CatalogIcon,
   CloseIcon,
   LogOutIcon,
   MenuIcon,
@@ -130,7 +131,7 @@ export default function Header() {
   const cartLabel = itemCount > 0 ? `Cart, ${itemCount} items` : 'Cart, empty'
 
   const items: NavItem[] = [
-    { to: '/catalog', label: 'Catalog' },
+    { to: '/catalog', label: 'Catalog', Icon: CatalogIcon },
     { to: '/cart', label: 'Cart', Icon: CartIcon, count: itemCount },
     ...(user.isLoggedIn
       ? [

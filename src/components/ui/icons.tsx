@@ -83,6 +83,18 @@ export function MoonIcon(props: IconProps) {
   )
 }
 
+/** Four departments in a grid - what the catalogue opens on. */
+export function CatalogIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
+    </Svg>
+  )
+}
+
 export function CartIcon(props: IconProps) {
   return (
     <Svg {...props}>
