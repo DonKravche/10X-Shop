@@ -142,20 +142,42 @@ export default function ProductRun({
                 </div>
 
                 {/* The label strip a catalogue prints under its goods:
-                    the name, then the figures in tabular type. */}
+                    the name, then the figures in tabular type.
+
+                    The name always occupies two lines, whether or not it
+                    fills them. Clamped at two but free to be one, a short
+                    name made its frame shorter, and because the row is
+                    bottom-aligned that dropped the whole frame - picture and
+                    all - by a line, so the pictures sat on three different
+                    levels on a phone. `2lh` is two of this element's own line
+                    boxes, so the lifted frame's larger type reserves its own
+                    larger space without a second number to keep in step. */}
                 <p
                   className={[
-                    'mt-2 line-clamp-2 font-medium text-ink',
+                    'mt-2 line-clamp-2 min-h-[2lh] font-medium text-ink',
                     lifted ? 'text-base' : 'text-[13px]',
                   ].join(' ')}
                 >
                   {product.title}
                 </p>
-                <p className="mt-1 flex flex-wrap items-baseline gap-x-2 text-[13px] tabular-nums">
+                {/* One line, always. Wrapping was the second thing knocking
+                    the frames off their shared line: three figures do not fit
+                    across a 144px frame, so the row became two lines and took
+                    the picture up with it. */}
+                <p className="mt-1 flex items-baseline gap-x-2 overflow-hidden text-[13px] whitespace-nowrap tabular-nums">
                   <span className="font-bold text-ink">{formatPrice(payable)}</span>
                   {product.discountPercentage >= 1 ? (
                     <>
-                      <span className="text-subtle line-through">
+                      {/* What the shopper would have paid. The small frames
+                          drop it until there is room: the percentage beside it
+                          already says there is a discount, and the price being
+                          charged is the one figure that must never go. */}
+                      <span
+                        className={[
+                          'text-subtle line-through',
+                          lifted ? '' : 'hidden sm:inline',
+                        ].join(' ')}
+                      >
                         {formatPrice(product.price)}
                       </span>
                       <span className="text-green-800 dark:text-green-400">

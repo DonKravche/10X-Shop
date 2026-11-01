@@ -7,6 +7,10 @@
  * file. Only src/ and index.html contain markup.
  */
 @source not "../docs";
+/* Analysis tooling writes its cache under src/. Tailwind would otherwise read
+   those files for class names and mint rules for words that only appear in a
+   JSON index - the same way it once added 2.3 kB of nothing from docs/. */
+@source not "./graphify-out";
 
 /*
  * Dark mode is driven by an attribute, not by the operating system alone
