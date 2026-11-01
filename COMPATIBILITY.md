@@ -52,13 +52,22 @@ document did not scroll sideways at that width.
 | 14 | `/nope` shows "Page not found" | ✓ | ✓ | ✓ | ✓ |
 | 15 | `/products/abc` shows "Page not found" | ✓ | ✓ | ✓ | ✓ |
 | 16 | `/products/999999` shows "Page not found" | ✓ | ✓ | ✓ | ✓ |
-| 17 | `/products/5` opens from a direct visit (SPA rewrite) | ✓ | ✓ | ✓ | ✓ |
+| 17 | The navigation suits the width: a row at 1440, one menu button at 375 | ✓ | ✓ | ✓ | ✓ |
+| 18 | `/products/5` opens from a direct visit (SPA rewrite) | ✓ | ✓ | ✓ | ✓ |
 | — | No horizontal scroll after every step above | ✓ | ✓ | ✓ | ✓ |
 | — | No console error and no unexpected failed request | ✓ | ✓ | ✓ | ✓ |
 
-**84 of 84 assertions passed** — 20 steps plus one console-and-network check,
+**88 of 88 assertions passed** — 21 steps plus one console-and-network check,
 each at 2 widths in 2 browsers. No layout or behavioural difference was found
 between the two engines, at either width.
+
+Row 17 is the one the collapsed navigation added, and it asserts the opposite
+thing at each width: below 768px there must be a menu button and every
+destination must be inside the panel it opens; at 1440 that button must not
+exist and the bar must carry the navigation itself. A menu that leaked onto a
+desktop, or a phone bar that quietly kept a row nothing could be tapped in,
+would fail at exactly one of the two widths — which is the point of running
+both.
 
 Rows 1a to 1c are the three the catalogue restructure added. The catalogue now
 opens on its departments, so 1a asserts both halves of that — every department

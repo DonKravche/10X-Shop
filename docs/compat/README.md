@@ -28,11 +28,12 @@ and every `overflow` is `false`.
 
 ## What it asserts
 
-Twenty steps — the landing page, the catalogue in both of its states, one
+Twenty-one steps — the landing page, the catalogue in both of its states, one
 department, the paged catalogue, a product, the cart, the checkout guard, login
 validation, sign up and its two account rules, the order, the three Not-found
-cases and a direct visit to a deep URL — plus a horizontal-scroll measurement
-after each one, in Chrome and Firefox, at 375 × 812 and 1440 × 900.
+cases, the navigation at each width and a direct visit to a deep URL — plus a
+horizontal-scroll measurement after each one, in Chrome and Firefox, at
+375 × 812 and 1440 × 900.
 
 The steps wait for a named element or URL and throw if it does not arrive, so a
 pass means the behaviour happened, not that the page merely loaded.
@@ -49,6 +50,13 @@ screenshot block still waited for an `article` there, and because it sat outside
 all, in either browser. Waits on the departments view now look for
 `a[href^="/catalog?category="]`, and only the views that render cards wait for
 `article`.
+
+**A step may assert different things at different widths.** The navigation
+step is the only one that does: below 768px it opens the menu and looks inside
+it, above it asserts that no menu button exists and the bar carries the links.
+Every other step is written to pass at both widths, and the helper that signs
+out opens the menu first when there is one, which is also what a shopper on a
+phone does.
 
 **Expected failures are named, not ignored.** The suite asks DummyJSON for
 `/products/999999` on purpose, so that one URL is allowed to 404. Every other

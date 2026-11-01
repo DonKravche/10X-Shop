@@ -187,7 +187,20 @@ async function run(engine, name, launchOptions = {}) {
      * destination. Going straight to /login would drop that state and the
      * later steps would land on the catalogue instead.
      */
+    /**
+     * Below 768px every destination and control lives behind the menu
+     * button, so reaching one starts by opening it - which is what a shopper
+     * on a phone does too. Above it the button does not exist and this is a
+     * no-op. `getByRole` ignores what is hidden from the accessibility tree,
+     * so only the copy on screen is ever matched.
+     */
+    const openMenuIfCollapsed = async () => {
+      const button = page.getByRole('button', { name: 'Open menu' })
+      if (await button.isVisible()) await button.click()
+    }
+
     const signOutAndReturnToGuard = async () => {
+      await openMenuIfCollapsed()
       await page.getByRole('button', { name: 'Log out' }).click()
       await page.goto(`${BASE}/checkout`, { waitUntil: 'networkidle' })
       await page.waitForURL(/\/login$/, { timeout: 20000 })
@@ -259,6 +272,45 @@ async function run(engine, name, launchOptions = {}) {
     await step('unknown product id shows Not found', async () => {
       await page.goto(`${BASE}/products/999999`, { waitUntil: 'networkidle' })
       await page.waitForSelector('text=Page not found', { timeout: 20000 })
+    })
+
+    // 10b. The navigation suits the width: a row on a desktop, one button
+    // on a phone, with everything behind it.
+    await step('the navigation fits the width it is given', async () => {
+      await page.goto(`${BASE}/catalog`, { waitUntil: 'networkidle' })
+      const menuButton = page.getByRole('button', { name: 'Open menu' })
+
+      if (vp.width < 768) {
+        if (!(await menuButton.isVisible())) throw new Error('no menu button')
+        await menuButton.click()
+        // Every destination is in the panel, not only some of them.
+        // Which account destinations exist depends on who is signed in, and
+        // by this point in the run that is a signed-in shopper, so the pair
+        // is asserted as "whichever the bar would have shown" rather than by
+        // naming /login, which only a guest has.
+        for (const href of ['/catalog', '/cart']) {
+          await page.waitForSelector(`#main-menu a[href="${href}"]`, {
+            timeout: 10000,
+          })
+        }
+        const account = await page
+          .locator('#main-menu a[href="/profile"], #main-menu a[href="/login"]')
+          .count()
+        if (account === 0) throw new Error('no way to the account in the menu')
+        await page.keyboard.press('Escape')
+        await page.waitForSelector('#main-menu', {
+          state: 'detached',
+          timeout: 10000,
+        })
+        return
+      }
+
+      if (await menuButton.isVisible()) {
+        throw new Error('the menu button leaked onto a wide screen')
+      }
+      if (!(await page.locator('header a[href="/cart"]').first().isVisible())) {
+        throw new Error('the cart is not in the bar')
+      }
     })
 
     // 11. A direct visit to a deep URL works (the SPA rewrite).

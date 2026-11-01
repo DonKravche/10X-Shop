@@ -529,6 +529,60 @@ what the step actually needed.
 
 ---
 
+## 13. The carousel's frames stood on three different lines
+
+**Symptom.** Reported from a phone: the product runs on the landing page look
+ragged, the frames are "not on same line". On a desktop they are perfect.
+
+**Reproduction.** Open `/` at 375px and look at either run.
+
+**Tool.** Measurement rather than eyes, because the difference is one line of
+13px text and a screenshot argument would have gone in circles. Reading
+`getBoundingClientRect()` off every frame in the row named it at once:
+
+```
+375px   256x312@top291  144x215@top388  144x215@top388  144x195@top407  144x195@top407
+768px   320x376@top258  176x227@top407  176x227@top407  176x227@top407  176x227@top407
+```
+
+Two heights at 375 and one at 768. Nineteen pixels apart, which is one line.
+
+**Root cause.** Two independent variable-height captions under a row that is
+bottom-aligned. `items-end` is deliberate - it is what puts the frames on a
+shared baseline with one lifted above them - but it means any caption that is
+shorter lifts its whole frame, picture included, by that much.
+
+1. The title is `line-clamp-2`: clamped at two lines but free to be one. A
+   short name made a short frame.
+2. The price row was `flex-wrap`, and three figures do not fit across a 144px
+   frame, so some rows took two lines and others one.
+
+At 768px the frames are 176px wide, every title wrapped and every price fit,
+so all the frames happened to agree and the bug was invisible.
+
+**Fix.** The title reserves two lines whether or not it fills them, with
+`min-h-[2lh]` - two of that element's *own* line boxes, so the lifted frame's
+larger type reserves its own larger space and there is no second number to
+keep in step. The price row no longer wraps, and the small frames drop the
+struck-through original until there is room for it: the percentage beside it
+already says there is a discount, and the price actually being charged is the
+one figure that must never go.
+
+**Verification.** Every frame in every run, at 375, 414, 768, 1024 and 1440:
+one top edge, one height. The department grid and the product grid were
+measured the same way and were already square.
+
+**What I learned.** A layout bug that only appears at one width is a layout
+bug nobody will see in review, because review happens on a laptop. The reason
+it only appeared there is worth keeping too: `line-clamp-2` sets a maximum,
+and I had read it as a size. Anything that bottom-aligns a row needs its
+variable parts given a floor, not just a ceiling. And `lh` turned out to be
+the right unit precisely because it is not a number I chose - it is whatever
+the line box already is, so it cannot drift from the type it is reserving
+space for.
+
+---
+
 ## Checking the error boundary
 
 Not a bug, but worth recording since the boundary is otherwise invisible.
