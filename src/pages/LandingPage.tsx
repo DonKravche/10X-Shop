@@ -239,7 +239,7 @@ export default function LandingPage() {
         // which O3 forbids.
         className="group block overflow-hidden bg-ink transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ink"
       >
-        <Container className="py-16">
+        <Container className="@container py-16">
           <div className="flex items-start justify-between gap-6">
             <p className="max-w-xs text-base text-surface transition-colors group-hover:text-ink">
               No account needed, and nothing to pay.
@@ -249,7 +249,16 @@ export default function LandingPage() {
               className="shrink-0 -rotate-45 text-surface transition-colors group-hover:text-ink"
             />
           </div>
-          <p className="mt-10 overflow-hidden text-[19vw] leading-[0.8] font-bold tracking-tighter whitespace-nowrap text-surface transition-colors group-hover:text-ink">
+          {/*
+            Sized in cqw, not vw, because the box this word has to fit is the
+            Container - and the Container stops growing at max-w-7xl while the
+            viewport does not. At 1280px the two agree; by 1920px the word was
+            116% of its frame and by 2344px 142%, so the clip below was eating
+            "SE" and the band read BROW. One container width now drives both
+            the frame and the type, so the word fills ~95% of it at every
+            width instead of only below the cap.
+          */}
+          <p className="mt-10 overflow-hidden text-[19cqw] leading-[0.8] font-bold tracking-tighter whitespace-nowrap text-surface transition-colors group-hover:text-ink">
             BROWSE
           </p>
         </Container>
