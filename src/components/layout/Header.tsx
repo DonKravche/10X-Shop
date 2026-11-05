@@ -46,7 +46,12 @@ import type { IconProps } from '../ui/icons'
 interface NavItem {
   to: string
   label: string
-  Icon?: (props: IconProps) => JSX.Element
+  /**
+   * Required, so the menu's icon column is never ragged. Adding a
+   * destination without a mark is a compile error rather than one row whose
+   * word starts 32px left of the others.
+   */
+  Icon: (props: IconProps) => JSX.Element
   /** The cart's count, which belongs in the link's accessible name. */
   count?: number
   /**
@@ -138,7 +143,10 @@ export default function Header() {
           { to: '/orders', label: 'Orders', Icon: OrdersIcon, compact: true },
           { to: '/profile', label: 'Profile', Icon: UserIcon, compact: true },
         ]
-      : [{ to: '/login', label: 'Log in' }]),
+      : // UserIcon again, which is unambiguous because Log in and Profile are
+        // the two halves of one slot: a guest never sees Profile and a
+        // signed-in shopper never sees Log in.
+        [{ to: '/login', label: 'Log in', Icon: UserIcon }]),
   ]
 
   return (
@@ -171,7 +179,7 @@ export default function Header() {
                 // screen reader otherwise hears "Cart" and then a bare number.
                 aria-label={to === '/cart' ? cartLabel : compact ? label : undefined}
               >
-                {Icon ? <Icon size={18} /> : null}
+                <Icon size={18} />
                 <span className={compact ? 'hidden lg:inline' : undefined}>
                   {label}
                 </span>
@@ -244,17 +252,7 @@ export default function Header() {
                   className={menuLinkClass}
                   aria-label={to === '/cart' ? cartLabel : undefined}
                 >
-                  {/*
-                    The icon column is kept even by a row that has no icon.
-                    Without it Catalog and Log in started 32px left of the
-                    rows between them, and a column of six words with three
-                    different left edges reads as a mistake.
-                  */}
-                  {Icon ? (
-                    <Icon size={20} />
-                  ) : (
-                    <span className="inline-block size-5" aria-hidden="true" />
-                  )}
+                  <Icon size={20} />
                   {label}
                   {count !== undefined && count > 0 ? (
                     <span className="ml-auto inline-flex min-w-6 items-center justify-center rounded-full bg-ink px-2 py-0.5 text-sm font-medium tabular-nums text-surface">
