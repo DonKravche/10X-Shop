@@ -53,13 +53,24 @@ document did not scroll sideways at that width.
 | 15 | `/products/abc` shows "Page not found" | ✓ | ✓ | ✓ | ✓ |
 | 16 | `/products/999999` shows "Page not found" | ✓ | ✓ | ✓ | ✓ |
 | 17 | The navigation suits the width: a row at 1440, one menu button at 375 | ✓ | ✓ | ✓ | ✓ |
-| 18 | `/products/5` opens from a direct visit (SPA rewrite) | ✓ | ✓ | ✓ | ✓ |
+| 18 | The landing page's closing word fits its frame at 1920 and 2560 | ✓ | ✓ | ✓ | ✓ |
+| 19 | `/products/5` opens from a direct visit (SPA rewrite) | ✓ | ✓ | ✓ | ✓ |
 | — | No horizontal scroll after every step above | ✓ | ✓ | ✓ | ✓ |
 | — | No console error and no unexpected failed request | ✓ | ✓ | ✓ | ✓ |
 
-**88 of 88 assertions passed** — 21 steps plus one console-and-network check,
+**92 of 92 assertions passed** — 22 steps plus one console-and-network check,
 each at 2 widths in 2 browsers. No layout or behavioural difference was found
 between the two engines, at either width.
+
+Row 18 is the odd one out: it leaves the matrix's two widths behind and
+measures at 1920 and 2560 as well. It has to, because the bug it guards
+against cannot appear at either width this matrix runs at — the landing page's
+closing word was sized in viewport units inside a frame that stops growing at
+1280px, so below that cap the two agree and nothing looks wrong. At 1920 the
+word was 116% of its frame and at 2344 it was 142%, clipped to read "BROW".
+It is also measured with a Range rather than `scrollWidth`, because the
+element clips its overflow and a clipped element's `scrollWidth` reported the
+frame's own width at 1440 — a perfect fit, which was false.
 
 Row 17 is the one the collapsed navigation added, and it asserts the opposite
 thing at each width: below 768px there must be a menu button and every

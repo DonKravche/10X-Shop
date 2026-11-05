@@ -28,7 +28,8 @@ and every `overflow` is `false`.
 
 ## What it asserts
 
-Twenty-one steps — the landing page, the catalogue in both of its states, one
+Twenty-two steps — the landing page and its closing word, the catalogue in
+both of its states, one
 department, the paged catalogue, a product, the cart, the checkout guard, login
 validation, sign up and its two account rules, the order, the three Not-found
 cases, the navigation at each width and a direct visit to a deep URL — plus a

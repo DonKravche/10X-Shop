@@ -583,6 +583,60 @@ space for.
 
 ---
 
+## 14. The closing word read BROW on a wide screen
+
+**Symptom.** Reported with a screenshot from a 2344px window: the landing
+page's closing band, which should say BROWSE, said BROW. On a laptop it was
+perfect.
+
+**Reproduction.** Open `/` and scroll to the band at any viewport wider than
+about 1400px.
+
+**Tool.** Measuring the word against its frame at seven widths, rather than
+looking at screenshots, because the failure is gradual and the eye cannot say
+where it begins:
+
+```
+ 1280px  font 243px  text 1216  box 1216  fills  95%
+ 1920px  font 365px  text 1489  box 1216  fills 116%
+ 2344px  font 445px  text 1818  box 1216  fills 142%
+```
+
+**Root cause.** A unit mismatch. The word was sized `text-[19vw]`, so it grows
+with the *viewport*. It sits inside `Container`, which stops growing at
+`max-w-7xl`. Below 1280px the two track each other and the word fills about
+95% of its frame; above it the frame is frozen at 1216px of content while the
+type keeps climbing. The `overflow-hidden` that had been added to stop an
+earlier 7px glyph overhang from scrolling the page sideways then did its job
+and cropped the rest of the word.
+
+**Fix.** `text-[19cqw]` with `@container` on the frame, so the type is
+measured against the box it actually has to fit rather than against the
+window. One width now drives both. The multiplier is unchanged, because at
+1280px — where the old unit and the new one agree — it was already right.
+Measured after: 91-95% of the frame at 375, 414, 768, 1024, 1280, 1440, 1920,
+2344 and 2560, and no sideways scroll at any of them.
+
+**Verification.** A new step in the cross-browser suite, which measures at
+1920 and 2560 as well as the matrix's own width — the bug is invisible at both
+375 and 1440, so a step that only ran there would have been decoration. Before
+trusting it I put the bug back with an injected `font-size: 19vw` and checked
+that the step failed: 1985px of word in a 1216px frame. It measures with a
+Range, not `scrollWidth`, because the element clips its overflow and its
+`scrollWidth` reported exactly the frame width at 1440 — a perfect fit, which
+was false.
+
+**What I learned.** Two units that agree across the whole range you test in
+are not the same unit. `vw` and the container's width were interchangeable at
+every width I had ever looked at, which is precisely why the mismatch survived
+— the cap at 1280px is the only place they diverge, and nothing I ran went
+past it. The second lesson is about the earlier fix: `overflow-hidden` was
+added to solve a 7px overhang, and in doing so it converted a later, much
+larger overflow from something visible into something silent. A guard that
+hides the symptom needs a check that measures the cause.
+
+---
+
 ## Checking the error boundary
 
 Not a bug, but worth recording since the boundary is otherwise invisible.

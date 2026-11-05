@@ -313,6 +313,56 @@ async function run(engine, name, launchOptions = {}) {
       }
     })
 
+    // 10c. The landing page's closing word has to fit its frame at every
+    // width. It is sized in container units because the frame stops growing
+    // at the container's max-width while the viewport does not; sized in vw
+    // it reached 142% of its frame at 2344px and the clip ate "SE".
+    await step('the closing word fits its frame past the container cap', async () => {
+      await page.goto(BASE, { waitUntil: 'networkidle' })
+      await page.waitForSelector('a[href^="/catalog?category="]', { timeout: 20000 })
+
+      // Wider than any viewport in the matrix, because that is the only place
+      // this can go wrong: below the cap the frame and the viewport agree.
+      for (const width of [vp.width, 1920, 2560]) {
+        await page.setViewportSize({ width, height: 800 })
+
+        const fit = await page.evaluate(() => {
+          const word = [...document.querySelectorAll('p')].find(
+            (p) => p.textContent.trim() === 'BROWSE',
+          )
+          if (!word) return null
+
+          // A Range, not scrollWidth. The element clips its overflow, and a
+          // clipped element's scrollWidth is not dependable: measuring the
+          // original bug it reported the true 1985px at 2560 but clamped to
+          // exactly the frame width at 1440, which would have read as a
+          // perfect fit. A Range measures the text itself either way.
+          const range = document.createRange()
+          range.selectNodeContents(word)
+
+          const frame = word.parentElement
+          const style = getComputedStyle(frame)
+          return {
+            text: Math.round(range.getBoundingClientRect().width),
+            box: Math.round(
+              frame.clientWidth -
+                parseFloat(style.paddingLeft) -
+                parseFloat(style.paddingRight),
+            ),
+          }
+        })
+
+        if (fit === null) throw new Error('the closing word is not on the page')
+        if (fit.text > fit.box) {
+          throw new Error(
+            width + 'px: the word is ' + fit.text + 'px in a ' + fit.box + 'px frame',
+          )
+        }
+      }
+
+      await page.setViewportSize({ width: vp.width, height: vp.height })
+    })
+
     // 11. A direct visit to a deep URL works (the SPA rewrite).
     await step('deep URL survives a direct visit', async () => {
       await page.goto(`${BASE}/products/5`, { waitUntil: 'networkidle' })
