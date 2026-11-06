@@ -8,7 +8,7 @@ reload, sign in and place an order.
 Login and checkout are deliberate local simulations: there is no authentication
 server, no token and no payment. Nothing you type is sent anywhere.
 
-**Live demo:** _not deployed yet — see "Deploying" below._
+**Live demo:** https://10-x-shop-psi.vercel.app/
 
 ---
 
