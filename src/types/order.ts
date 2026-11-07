@@ -1,4 +1,5 @@
 import type { CartItem } from './cart'
+import type { DeliveryLeg } from './storage'
 
 /**
  * Order models (Annex A1.5, FULL).
@@ -39,6 +40,16 @@ export interface Order {
    * address the order goes to.
    */
   shippingCost: number
+  /**
+   * The journeys that charge paid for: which warehouse each part of the
+   * order left from, how far it came and what that cost.
+   *
+   * Optional, because orders placed before the shop had storage locations
+   * have none and there is nothing to reconstruct them from - unlike
+   * `shippingCost`, which was recoverable from the other figures. Those
+   * orders show their total and no breakdown, which is the truth about them.
+   */
+  deliveryLegs?: DeliveryLeg[]
   total: number
   /** new Date().toISOString(), which is what the status is computed from. */
   placedAt: string

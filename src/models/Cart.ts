@@ -1,5 +1,7 @@
 import type { CartItem } from '../types/cart'
+import type { DeliveryPlan } from '../types/storage'
 import { discountedPrice } from '../utils/format'
+import { Delivery } from './Delivery'
 
 /**
  * What a cart can be asked about its money (Annex A, T4).
@@ -24,9 +26,6 @@ export interface ICart {
  * also makes it the one part that could be unit tested without a browser.
  */
 export class Cart implements ICart {
-  /** Orders at or above this (after discount) ship free. */
-  static readonly FREE_SHIPPING_FROM = 100
-  static readonly SHIPPING_COST = 10
   /** The one promo code of P4.4. */
   static readonly PROMO_CODE = '10X10'
   static readonly PROMO_RATE = 0.1
@@ -34,6 +33,8 @@ export class Cart implements ICart {
   constructor(
     private readonly items: CartItem[],
     private readonly promoCode: string | null,
+    /** The city the basket is going to, or null until one is chosen. */
+    private readonly destination: string | null = null,
   ) {}
 
   /** Case-insensitive, as P4.4 requires. */
@@ -70,11 +71,46 @@ export class Cart implements ICart {
     return this.round(this.subtotal() * Cart.PROMO_RATE)
   }
 
-  /** Free over the threshold, and never charged on an empty cart. */
+  /**
+   * What it costs to bring this basket from storage to the customer.
+   *
+   * Delegated to `Delivery`, which finds the nearest warehouse stocking each
+   * line and charges each journey by its distance. Until a destination has
+   * been chosen there is no journey to price, so this is zero and the screens
+   * say the charge is not known yet rather than claiming it is free.
+   */
   shipping(): number {
     if (this.isEmpty) return 0
-    const afterDiscount = this.subtotal() - this.discount()
-    return afterDiscount >= Cart.FREE_SHIPPING_FROM ? 0 : Cart.SHIPPING_COST
+    return this.delivery.total()
+  }
+
+  /** The journeys behind that figure, for the screens that show them. */
+  deliveryPlan(): DeliveryPlan {
+    return this.delivery.plan()
+  }
+
+  /** True once a city has been chosen, so a charge can be quoted at all. */
+  get hasDestination(): boolean {
+    return this.deliveryPlan().destination !== null
+  }
+
+  private deliveryCache: Delivery | null = null
+
+  /**
+   * One Delivery per Cart, built on first use.
+   *
+   * It caches the plan it works out, so handing every caller the same
+   * instance means the journeys are computed once however many times the
+   * summary, the total and the panel each ask for them.
+   *
+   * A getter rather than a field initialised to `new Delivery(this.items, …)`,
+   * because a field initialiser and the constructor's parameter properties
+   * are assigned in an order that depends on the compile target - and if the
+   * field won, it would read `this.items` before it had been set.
+   */
+  private get delivery(): Delivery {
+    this.deliveryCache ??= new Delivery(this.items, this.destination)
+    return this.deliveryCache
   }
 
   total(): number {

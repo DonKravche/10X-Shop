@@ -16,6 +16,7 @@ export type CartAction =
   | { type: 'CLEAR' }
   | { type: 'APPLY_PROMO'; code: string }
   | { type: 'REMOVE_PROMO' }
+  | { type: 'SET_DESTINATION'; city: string | null }
 
 /** Keeps a quantity inside 1..stock (Annex A, P4.2). */
 function clampQuantity(quantity: number, stock: number): number {
@@ -64,6 +65,7 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
         discountPercentage: action.product.discountPercentage,
         stock: action.product.stock,
         quantity: added,
+        category: action.product.category,
       }
       return { ...state, items: [...state.items, line] }
     }
@@ -87,7 +89,10 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
     }
 
     case 'CLEAR': {
-      return { items: [], promoCode: null }
+      // The destination survives an emptied cart: where someone lives does
+      // not change because they checked out, and asking again on the next
+      // basket would be asking a question already answered.
+      return { items: [], promoCode: null, destination: state.destination }
     }
 
     case 'APPLY_PROMO': {
@@ -98,12 +103,18 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, promoCode: null }
     }
 
+    case 'SET_DESTINATION': {
+      return { ...state, destination: action.city }
+    }
+
     default: {
       /*
        * Every case above is handled, so by here `action` has narrowed to
-       * `never` and this assignment compiles. Add a seventh action without a
+       * `never` and this assignment compiles. Add an eighth action without a
        * case for it and this line stops compiling - which is the point: the
-       * compiler, not a test, is what notices the missing branch.
+       * compiler, not a test, is what notices the missing branch. It earned
+       * its keep when SET_DESTINATION was added: the build failed here until
+       * the case above was written.
        */
       const exhaustive: never = action
       return exhaustive

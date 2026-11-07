@@ -13,6 +13,8 @@ export interface CartContextValue {
   items: CartItem[]
   /** The applied promo code, or null (P4.4). */
   promoCode: string | null
+  /** The slug of the city the basket is going to, or null until chosen. */
+  destination: string | null
   /** Total units in the cart, i.e. the header badge. */
   itemCount: number
   /** The money, computed by the Cart class so every screen agrees (P4.3). */
@@ -31,6 +33,11 @@ export interface CartContextValue {
   /** Applies a code. Returns false when it is not a code we know (P4.4). */
   applyPromo: (code: string) => boolean
   removePromo: () => void
+  /**
+   * Chooses where the basket is going, which is what makes a delivery charge
+   * computable at all. Null puts it back to "not chosen yet".
+   */
+  setDestination: (city: string | null) => void
 }
 
 export const CartContext = createContext<CartContextValue | null>(null)

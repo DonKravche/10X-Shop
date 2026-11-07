@@ -43,6 +43,7 @@ export class OrderModel {
       subtotal: cart.subtotal(),
       discount: cart.discount(),
       shippingCost: cart.shipping(),
+      deliveryLegs: cart.deliveryPlan().legs,
       total: cart.total(),
       placedAt: placedAt.toISOString(),
     })
