@@ -204,11 +204,12 @@ export default function OrderDetailPage() {
                   would be fine, but leaving it out when it was charged made
                   the three figures on screen fail to add up. */}
               <div className="flex items-baseline justify-between gap-4">
-                <dt className="text-muted">Shipping</dt>
+                <dt className="text-muted">Delivery</dt>
                 <dd className="tabular-nums text-ink">
                   {order.shippingCost === 0 ? 'Free' : formatPrice(order.shippingCost)}
                 </dd>
               </div>
+
               <div className="flex items-baseline justify-between gap-4 border-t border-line pt-3">
                 <dt className="font-medium text-ink">Total</dt>
                 <dd className="text-lg font-bold tabular-nums text-ink">
@@ -216,6 +217,37 @@ export default function OrderDetailPage() {
                 </dd>
               </div>
             </dl>
+
+            {/*
+              The journeys that charge paid for, outside the list rather than
+              inside it: a <dl> holds terms and descriptions, and a <ul> is
+              neither. Orders placed before the shop had storage locations
+              carry no journeys and show the figure alone, rather than an
+              invented breakdown.
+            */}
+            {order.deliveryLegs !== undefined && order.deliveryLegs.length > 0 ? (
+              <div className="mt-5 border-t border-line pt-4">
+                <h3 className="text-xs font-medium text-muted">How delivery was worked out</h3>
+                <ul className="mt-2 space-y-1.5 text-xs text-subtle">
+                  {order.deliveryLegs.map((leg) => (
+                    <li
+                      key={leg.warehouseId}
+                      className="flex items-baseline justify-between gap-3"
+                    >
+                      <span>
+                        {leg.warehouseName}
+                        {leg.distanceKm === 0
+                          ? ' · same city'
+                          : ` · ${leg.distanceKm} km`}
+                      </span>
+                      <span className="shrink-0 tabular-nums">
+                        {leg.cost === 0 ? 'Free' : formatPrice(leg.cost)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         </aside>
       </div>

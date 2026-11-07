@@ -2,12 +2,14 @@ import { useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import CartSummary from '../components/cart/CartSummary'
+import DeliveryPanel from '../components/cart/DeliveryPanel'
 import Button from '../components/ui/Button'
 import Container from '../components/ui/Container'
 import FormField from '../components/ui/FormField'
 import PageHeader from '../components/ui/PageHeader'
 import { useAuth } from '../context/auth-context'
 import { useCart } from '../context/cart-context'
+import { findCity } from '../data/cities'
 import { OrderModel, readOrders } from '../models/Order'
 import { orderStorage } from '../models/storage'
 import type { CheckoutFormErrors, CheckoutFormValues } from '../types/checkout'
@@ -26,7 +28,7 @@ import { hasErrors, validateCheckout } from '../utils/validation'
  */
 export default function CheckoutPage() {
   const { user } = useAuth()
-  const { items, cart, promoCode, clear } = useCart()
+  const { items, cart, promoCode, destination, clear, setDestination } = useCart()
   const navigate = useNavigate()
 
   const [values, setValues] = useState<CheckoutFormValues>({
@@ -34,7 +36,10 @@ export default function CheckoutPage() {
     fullName: user.username,
     email: '',
     address: '',
-    city: '',
+    // Seeded from the cart, because the city may already have been chosen
+    // there to price the delivery. Asking for it twice would let the address
+    // and the distance disagree.
+    city: destination === null ? '' : (findCity(destination)?.name ?? ''),
   })
   const [errors, setErrors] = useState<CheckoutFormErrors>({})
   const [isPlacing, setIsPlacing] = useState(false)
@@ -55,6 +60,17 @@ export default function CheckoutPage() {
     const { name, value } = event.target
     setValues((current) => ({ ...current, [name]: value }))
     setErrors((current) => ({ ...current, [name]: undefined }))
+  }
+
+  /**
+   * One choice, two things to keep in step: the city the order is addressed
+   * to, and the city its delivery is priced against. They are the same
+   * choice, so they are set together and cannot drift apart.
+   */
+  function handleDestination(slug: string) {
+    setDestination(slug === '' ? null : slug)
+    setValues((current) => ({ ...current, city: findCity(slug)?.name ?? '' }))
+    setErrors((current) => ({ ...current, city: undefined }))
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -131,16 +147,15 @@ export default function CheckoutPage() {
                 onChange={handleChange}
                 error={errors.address}
               />
-              <FormField
-                id="city"
-                name="city"
-                label="City"
-                type="text"
-                autoComplete="address-level2"
-                value={values.city}
-                onChange={handleChange}
-                error={errors.city}
-              />
+              <div className="sm:col-span-2">
+                <DeliveryPanel
+                  id="city"
+                  destination={destination ?? ''}
+                  onDestinationChange={handleDestination}
+                  legs={cart.deliveryPlan().legs}
+                  error={errors.city}
+                />
+              </div>
             </div>
           </div>
 

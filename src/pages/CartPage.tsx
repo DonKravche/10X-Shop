@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import CartItemRow from '../components/cart/CartItemRow'
 import CartSummary from '../components/cart/CartSummary'
+import DeliveryPanel from '../components/cart/DeliveryPanel'
 import PromoForm from '../components/cart/PromoForm'
 import Container from '../components/ui/Container'
 import PageHeader from '../components/ui/PageHeader'
@@ -22,11 +23,13 @@ export default function CartPage() {
     itemCount,
     cart,
     promoCode,
+    destination,
     setQuantity,
     removeItem,
     clear,
     applyPromo,
     removePromo,
+    setDestination,
   } = useCart()
   const { showToast } = useToast()
   const location = useLocation()
@@ -111,6 +114,21 @@ export default function CartPage() {
 
         <aside className="lg:col-span-1">
           <CartSummary cart={cart} promoCode={promoCode} onRemovePromo={removePromo}>
+            {/*
+              The city is asked for here rather than only at checkout, so the
+              total on this page is a real total. A basket that says "Free"
+              until the last screen and then adds 265 dollars is not a
+              summary, it is a surprise.
+            */}
+            <div className="mt-5 border-t border-line pt-5">
+              <DeliveryPanel
+                id="cart-destination"
+                destination={destination ?? ''}
+                onDestinationChange={(slug) => setDestination(slug === '' ? null : slug)}
+                legs={cart.deliveryPlan().legs}
+              />
+            </div>
+
             {promoCode === null ? <PromoForm onApply={handleApplyPromo} /> : null}
 
             <Link

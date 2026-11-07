@@ -23,6 +23,7 @@ export default function CartSummary({
 }: CartSummaryProps) {
   const discount = cart.discount()
   const shipping = cart.shipping()
+  const plan = cart.deliveryPlan()
 
   return (
     <div className="rounded-lg border border-line bg-surface p-5">
@@ -57,15 +58,40 @@ export default function CartSummary({
           </div>
         ) : null}
 
+        {/*
+          Delivery cannot be quoted before it is known where the order is
+          going, so until a city is chosen this says so instead of showing
+          "Free" - which would be a figure the shopper would then watch
+          change, and the one thing a total must not do.
+        */}
         <div className="flex items-baseline justify-between gap-4">
-          <dt className="text-muted">Shipping</dt>
+          <dt className="text-muted">
+            Delivery
+            {plan.destination !== null ? (
+              <span className="text-subtle"> to {plan.destination.name}</span>
+            ) : null}
+          </dt>
           <dd className="tabular-nums text-ink">
-            {shipping === 0 ? 'Free' : formatPrice(shipping)}
+            {plan.destination === null
+              ? <span className="text-subtle">Choose a city</span>
+              : shipping === 0
+                ? 'Free'
+                : formatPrice(shipping)}
           </dd>
         </div>
 
         <div className="flex items-baseline justify-between gap-4 border-t border-line pt-3">
-          <dt className="font-medium text-ink">Total</dt>
+          <dt className="font-medium text-ink">
+            Total
+            {/* Said out loud, because otherwise this figure is one a shopper
+                would watch change later - and a total that moves after it has
+                been read is worse than one that admits it is incomplete. */}
+            {plan.destination === null ? (
+              <span className="block text-xs font-normal text-subtle">
+                Before delivery
+              </span>
+            ) : null}
+          </dt>
           <dd className="text-lg font-bold tabular-nums text-ink">
             {formatPrice(cart.total())}
           </dd>
