@@ -124,6 +124,50 @@ const showingDepartments = !hasFilters && params.page === 1
 
 Inverting it restores A1.2's behaviour exactly, with no other change.
 
+### Storage locations and distance-based delivery
+
+Added on instruction, and it replaces a rule rather than adding to one, so it
+is recorded here beside the route-map deviations.
+
+**What it replaces.** Shipping was a flat $10, free once the basket passed
+$100. It is now the distance from the warehouse that stocks each item to the
+customer's city, at $1 per kilometre, and nothing at all when the goods are
+already in that city. The free-over-$100 threshold is gone: the new rule is
+complete on its own, and keeping both would have meant a $265 journey priced
+at zero because the basket happened to be expensive.
+
+**How a product gets a location.** `src/data/warehouses.ts` is the taxonomy:
+five warehouses, each listing the DummyJSON categories it stocks. Every one of
+the 24 categories appears at least once, and two of them - `sunglasses` and
+`groceries` - are stocked in two places on purpose, because a shop with one
+source per product never has to choose and choosing the nearest is the rule
+being implemented. A category no warehouse lists falls back to the one marked
+`isDefault`.
+
+**How the distance is found.** `src/data/cities.ts` holds eight Georgian cities
+with their real coordinates, and `utils/distance.ts` is the haversine formula.
+Nothing is a table of pre-written distances: eight cities would need 28 of
+them and a new row for every city added. A warehouse has no coordinates of its
+own - it is in a city, and the city has them - so "is this in the customer's
+city" and "how far is it" cannot disagree.
+
+**What it produces.** Tbilisi to Rustavi is 23 km, so $23. Tbilisi to Poti is
+265 km, so $265. A basket drawn from two warehouses is two journeys, charged
+separately and shown separately, because it genuinely is two vans.
+
+**Where it is seen.** The cart page asks for the city, so its total is a real
+total rather than one that changes at the last screen; while no city is
+chosen the Total is labelled "Before delivery". The checkout inherits that
+choice - the address's city and the city the distance is measured to are one
+field, so they cannot drift apart. The placed order stores the journeys it was
+charged for and shows them under its totals.
+
+**The one thing worth flagging.** At $1 per kilometre on a country this size,
+delivery can exceed the goods: a pair of shoes from Poti to Tbilisi is $265 on
+top of a $144 pair. That is the rule as specified, and it is honest about
+itself on screen. The rate is `Delivery.RATE_PER_KM`, one constant, so scaling
+it is a one-line change.
+
 ### Not delivered, and why
 
 - **Deploy (step 24).** The build is verified and `vercel.json` carries the SPA

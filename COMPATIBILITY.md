@@ -40,6 +40,7 @@ document did not scroll sideways at that width.
 | 2 | A card opens `/products/:id` | ✓ | ✓ | ✓ | ✓ |
 | 3 | Add to cart moves the header badge to 1 | ✓ | ✓ | ✓ | ✓ |
 | 4 | Cart shows the line and a currency-formatted total | ✓ | ✓ | ✓ | ✓ |
+| 4b | Delivery is free in the warehouse’s own city, and priced by distance elsewhere | ✓ | ✓ | ✓ | ✓ |
 | 5 | A guest opening `/checkout` is sent to `/login` | ✓ | ✓ | ✓ | ✓ |
 | 6 | Empty login shows "Username is required" and "Password is required" | ✓ | ✓ | ✓ | ✓ |
 | 7 | Sign up is reachable from login and refuses mismatched passwords | ✓ | ✓ | ✓ | ✓ |
@@ -58,9 +59,16 @@ document did not scroll sideways at that width.
 | — | No horizontal scroll after every step above | ✓ | ✓ | ✓ | ✓ |
 | — | No console error and no unexpected failed request | ✓ | ✓ | ✓ | ✓ |
 
-**92 of 92 assertions passed** — 22 steps plus one console-and-network check,
+**96 of 96 assertions passed** — 23 steps plus one console-and-network check,
 each at 2 widths in 2 browsers. No layout or behavioural difference was found
 between the two engines, at either width.
+
+Row 4b is the delivery rule. It reads which warehouse the basket's item
+actually came from rather than assuming a category, then asserts the two
+halves of the rule: that warehouse's own city costs nothing, and two cities
+at different distances do not cost the same. Rustavi is half an hour from
+Tbilisi and Poti is the other side of the country, so if those two ever match,
+distance has stopped being read.
 
 Row 18 is the odd one out: it leaves the matrix's two widths behind and
 measures at 1920 and 2560 as well. It has to, because the bug it guards

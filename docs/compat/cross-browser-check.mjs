@@ -149,6 +149,59 @@ async function run(engine, name, launchOptions = {}) {
       }
     })
 
+    // 4b. Delivery is priced from the warehouse that stocks the goods:
+    // nothing when it is already in the customer's city, a pound a kilometre
+    // when it is not. Written without naming a category, because which
+    // product reached the cart depends on how the catalogue happened to sort.
+    await step('delivery is free in its own city and charged by distance', async () => {
+      await page.goto(`${BASE}/cart`, { waitUntil: 'networkidle' })
+      await page.waitForSelector('#cart-destination', { timeout: 20000 })
+
+      /** The delivery figure, and the city the goods leave from. */
+      const quote = async (slug) => {
+        await page.selectOption('#cart-destination', slug)
+        await page.waitForFunction(
+          () => document.querySelector('#cart-destination ~ ul > li') !== null,
+          { timeout: 10000 },
+        )
+        return page.evaluate(() => {
+          const row = document.querySelector('#cart-destination ~ ul > li')
+          const spans = row.querySelectorAll(':scope > div > span')
+          const cost = /free/i.test(spans[1].textContent)
+            ? 0
+            : Number(spans[1].textContent.replace(/[^0-9.]/g, ''))
+          return { from: spans[0].textContent.trim(), cost }
+        })
+      }
+
+      // Ask anywhere first, only to learn which warehouse holds this item.
+      // Every warehouse is named "<City> <Role>" - Poti Harbour, Rustavi
+      // Industrial - so the city is the first word. Taken by splitting rather
+      // than by a regex over the roles, which is one fewer thing to keep in
+      // step with the taxonomy.
+      const anywhere = await quote('tbilisi')
+      const homeCity = anywhere.from.split(' ')[0]
+      const homeSlug = homeCity.toLowerCase()
+
+      // Its own city: the goods do not travel, so nothing is charged.
+      const atHome = await quote(homeSlug)
+      if (atHome.cost !== 0) {
+        throw new Error(`${anywhere.from} to ${homeCity} cost ${atHome.cost}, not nothing`)
+      }
+
+      // Two cities at different distances must not cost the same. Rustavi is
+      // half an hour from Tbilisi and Poti is the other side of the country,
+      // so if these two ever match, distance has stopped being read.
+      const rustavi = await quote('rustavi')
+      const poti = await quote('poti')
+      if (rustavi.cost === poti.cost) {
+        throw new Error(`Rustavi and Poti both cost ${poti.cost}`)
+      }
+      if (!(rustavi.cost >= 0) || !(poti.cost >= 0)) {
+        throw new Error('a delivery was not a number')
+      }
+    })
+
     // 5. A guest is bounced from checkout to login.
     await step('guest is redirected from checkout to login', async () => {
       await page.goto(`${BASE}/checkout`, { waitUntil: 'networkidle' })
@@ -238,7 +291,9 @@ async function run(engine, name, launchOptions = {}) {
       await page.fill('#fullName', 'Dongi Kravche')
       await page.fill('#email', 'not-an-email')
       await page.fill('#address', 'Rustaveli Avenue 12')
-      await page.fill('#city', 'Tbilisi')
+      // The city is a list of the places the shop delivers to, because the
+      // charge is the distance to one of them, so it is chosen not typed.
+      await page.selectOption('#city', 'tbilisi')
       await page.getByRole('button', { name: 'Place order' }).click()
       await page.waitForSelector('text=Please enter a valid email address', {
         timeout: 10000,
